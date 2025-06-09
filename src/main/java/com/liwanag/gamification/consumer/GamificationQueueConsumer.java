@@ -1,8 +1,10 @@
 package com.liwanag.gamification.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liwanag.gamification.dto.AnswerEvaluatedEvent;
+import com.liwanag.gamification.dto.Event;
 import com.liwanag.gamification.service.AchievementService;
 import com.liwanag.gamification.service.LeaderboardService;
 import com.liwanag.gamification.service.StreakService;
@@ -22,14 +24,13 @@ public class GamificationQueueConsumer {
 
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
-        AnswerEvaluatedEvent event = new ObjectMapper().readValue(message, AnswerEvaluatedEvent.class);
+        ObjectMapper mapper = new ObjectMapper();
+        Event<AnswerEvaluatedEvent> envelope = mapper.readValue(message, new TypeReference<Event<AnswerEvaluatedEvent>>() {});
+        AnswerEvaluatedEvent event = envelope.getDetail();
         System.out.println("Received from SQS:");
-        System.out.println(event.activityId());
-        System.out.println(event.userId());
-        System.out.println(event.episodeId());
-        System.out.println(event.questionId());
-        System.out.println(event.unitId());
-        System.out.println(event.result());
+        System.out.println(event.getQuestionId());
+        System.out.println(event.getResult());
+        System.out.println(event.getUserId());
 
 
         // Process the message and call the appropriate service methods
