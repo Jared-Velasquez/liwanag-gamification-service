@@ -49,7 +49,14 @@ public class XpService {
         }
 
         // If Redis is up, only increment Redis
-
-        // If Redis is down, fallback to database
+        if (xpRedisService.isRedisUp()) {
+            xpRedisService.incrementUserXp(userId, deltaXp);
+        } else if (xpDatabaseService.isDatabaseUp()) {
+            // If Redis is down, increment in the database
+            xpDatabaseService.saveUserXp(userId, deltaXp, null);
+            log.warn("Redis is down, incrementing XP in database for user {}", userId);
+        } else {
+            log.error("Both Redis and Database are down, cannot increment XP for user {}", userId);
+        }
     }
 }

@@ -14,7 +14,7 @@ import java.util.UUID;
 public class XpRedisService {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void incrementUserXp(String userId, Integer deltaXp) {
+    public void incrementUserXp(UUID userId, Integer deltaXp) {
         String key = "user:" + userId + ":xp";
         redisTemplate.opsForValue().increment(key, deltaXp);
     }

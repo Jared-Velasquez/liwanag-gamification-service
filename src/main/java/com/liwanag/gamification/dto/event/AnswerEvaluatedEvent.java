@@ -1,4 +1,4 @@
-package com.liwanag.gamification.dto;
+package com.liwanag.gamification.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
