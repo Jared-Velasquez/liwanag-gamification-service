@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -19,14 +20,17 @@ public class XpService {
         // First, check if the userId exists in Redis
         Integer xp = null;
 
-        if (xpRedisService.isRedisUp())
+        if (xpRedisService.isRedisUp()) {
+            log.info("Checking Redis for user {}'s XP", userId.toString());
             xp = xpRedisService.getUserXp(userId);
-        else
+        } else
             log.warn("Redis is down, falling back to database for user {}", userId);
 
         // If found in Redis, return it
-        if (xp != null)
+        if (xp != null) {
+            log.info("Found XP in Redis for user {}: {}", userId, xp);
             return xp;
+        }
 
         // If not found in Redis, fetch from the canonical database
         if (!xpDatabaseService.isDatabaseUp()) {
@@ -35,6 +39,7 @@ public class XpService {
         }
 
         // Fetch from the database and update Redis
+        log.info("Fetching XP from database for user {}" , userId.toString());
         xp = xpDatabaseService.getUserXp(userId);
         xpRedisService.setUserXp(userId, xp);
 
@@ -53,8 +58,8 @@ public class XpService {
             xpRedisService.incrementUserXp(userId, deltaXp);
         } else if (xpDatabaseService.isDatabaseUp()) {
             // If Redis is down, increment in the database
-            xpDatabaseService.saveUserXp(userId, deltaXp, null);
             log.warn("Redis is down, incrementing XP in database for user {}", userId);
+            xpDatabaseService.incrementUserXp(userId, deltaXp, Instant.now());
         } else {
             log.error("Both Redis and Database are down, cannot increment XP for user {}", userId);
         }

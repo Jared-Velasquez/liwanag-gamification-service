@@ -8,7 +8,7 @@ eventbridge = boto3.client("events", region_name="us-west-1")
 source = "scoring.service"
 detail_type = "AnswerEvaluated"
 payload = {
-    "userId": "c6514eba-0647-481f-b7f4-8542f462d121",
+    "userId": "e35e4184-f05c-4736-a902-8e0f1479563f",
     "questionId": "67890",
     "activityId": "abcde",
     "result": "correct",

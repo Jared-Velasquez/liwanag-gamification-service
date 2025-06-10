@@ -4,6 +4,7 @@ import com.liwanag.gamification.model.UserXp;
 import com.liwanag.gamification.repository.UserXpRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -11,11 +12,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class XpDatabaseService {
     private final UserXpRepository repository;
 
     @Transactional
-    public void saveUserXp(UUID userId, Integer xp, Instant timestamp) {
+    public void incrementUserXp(UUID userId, Integer xp, Instant timestamp) {
+        log.info("Incrementing XP in database for user {} by {}", userId, xp);
         repository.findById(userId).ifPresentOrElse(
             userXp -> {
                 userXp.setXp(userXp.getXp() + xp);
@@ -28,6 +31,7 @@ public class XpDatabaseService {
 
     @Transactional
     public Integer getUserXp(UUID userId) {
+        log.info("Fetching XP from database for user {}", userId);
         if (repository.existsById(userId)) {
             return repository.findById(userId)
                 .map(UserXp::getXp)

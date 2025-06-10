@@ -2,6 +2,7 @@ package com.liwanag.gamification.service.XpService;
 
 import com.liwanag.gamification.model.UserXp;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,21 +12,25 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class XpRedisService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     public void incrementUserXp(UUID userId, Integer deltaXp) {
+        log.info("Incrementing XP in Redis for user {} by {}", userId, deltaXp);
         String key = "user:" + userId + ":xp";
         redisTemplate.opsForValue().increment(key, deltaXp);
     }
 
     public Integer getUserXp(UUID userId) {
+        log.info("Fetching XP from Redis for user {}", userId.toString());
         String key = "user:" + userId + ":xp";
         return redisTemplate.opsForValue().get(key) != null ?
                (Integer) redisTemplate.opsForValue().get(key) : null;
     }
 
     public void setUserXp(UUID userId, Integer xp) {
+        log.info("Setting XP in Redis for user {} to {}", userId, xp);
         String key = "user:" + userId + ":xp";
         redisTemplate.opsForValue().set(key, xp);
     }
