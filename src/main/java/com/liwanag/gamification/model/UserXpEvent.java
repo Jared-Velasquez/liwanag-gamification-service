@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -25,5 +26,5 @@ public class UserXpEvent {
     private UUID userId;
     private Integer deltaXp;
     private UUID eventId;
-    private Timestamp timestamp;
+    private Instant timestamp;
 }

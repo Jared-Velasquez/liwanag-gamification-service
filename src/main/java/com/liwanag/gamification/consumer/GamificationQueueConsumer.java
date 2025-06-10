@@ -8,7 +8,7 @@ import com.liwanag.gamification.dto.Event;
 import com.liwanag.gamification.service.AchievementService;
 import com.liwanag.gamification.service.LeaderboardService;
 import com.liwanag.gamification.service.StreakService;
-import com.liwanag.gamification.service.XpService;
+import com.liwanag.gamification.service.XpService.XpDatabaseService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ public class GamificationQueueConsumer {
     private final AchievementService achievementService;
     private final LeaderboardService leaderboardService;
     private final StreakService streakService;
-    private final XpService xpService;
+    private final XpDatabaseService xpService;
 
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
@@ -33,7 +33,6 @@ public class GamificationQueueConsumer {
 
 
         // Process the message and call the appropriate service methods
-        // For example:
         // achievementService.processMessage(message);
         // leaderboardService.updateLeaderboard(message);
         // streakService.updateStreak(message);

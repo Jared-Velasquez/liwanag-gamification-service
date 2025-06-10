@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -21,5 +21,5 @@ public class UserXp {
     @Id
     private UUID userId;
     private Integer xp;
-    private LocalTime lastUpdated;
+    private Instant lastUpdated;
 }
