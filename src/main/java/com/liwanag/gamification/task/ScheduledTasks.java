@@ -17,7 +17,7 @@ public class ScheduledTasks {
     private final XpRedisService xpRedisService;
     private final XpDatabaseService xpDatabaseService;
     // Three minutes
-    private static final Integer SYNC_XP_DATABASE = 3 * 60 * 1000;
+    private static final int SYNC_XP_DATABASE = 3 * 60 * 1000;
 
     // Using Write-back/Write-behind caching strategy
     // TODO
