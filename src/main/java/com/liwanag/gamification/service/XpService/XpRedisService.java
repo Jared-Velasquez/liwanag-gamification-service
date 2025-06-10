@@ -19,19 +19,32 @@ public class XpRedisService {
         redisTemplate.opsForValue().increment(key, deltaXp);
     }
 
-    public Integer getXp(String userId) {
+    public Integer getUserXp(UUID userId) {
         String key = "user:" + userId + ":xp";
         return redisTemplate.opsForValue().get(key) != null ?
-               (Integer) redisTemplate.opsForValue().get(key) : 0;
+               (Integer) redisTemplate.opsForValue().get(key) : null;
+    }
+
+    public void setUserXp(UUID userId, Integer xp) {
+        String key = "user:" + userId + ":xp";
+        redisTemplate.opsForValue().set(key, xp);
     }
 
     public List<UserXp> getAllUserXps() {
         return redisTemplate.keys("user:*:xp").stream()
                 .map(key -> {
-                    String userId = key.replace("user:", "").replace(":xp", "");
-                    Integer xp = getXp(userId);
-                    return new UserXp(UUID.fromString(userId), xp, Instant.now());
+                    UUID userId = UUID.fromString(key.replace("user:", "").replace(":xp", ""));
+                    Integer xp = getUserXp(userId);
+                    return new UserXp(userId, xp, Instant.now());
                 })
                 .toList();
+    }
+
+    public boolean isRedisUp() {
+        try {
+            return redisTemplate.getConnectionFactory().getConnection().ping() != null;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

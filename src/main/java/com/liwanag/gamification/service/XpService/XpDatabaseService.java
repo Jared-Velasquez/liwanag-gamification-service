@@ -25,4 +25,26 @@ public class XpDatabaseService {
             () -> repository.save(new UserXp(userId, xp, timestamp))
         );
     }
+
+    @Transactional
+    public Integer getUserXp(UUID userId) {
+        if (repository.existsById(userId)) {
+            return repository.findById(userId)
+                .map(UserXp::getXp)
+                .orElse(0);
+        }
+
+        // Create a new UserXp entry with 0 XP if it doesn't exist
+        UserXp newUserXp = new UserXp(userId, 0, Instant.now());
+        repository.save(newUserXp);
+        return 0;
+    }
+
+    public boolean isDatabaseUp() {
+        try {
+            return repository.count() >= 0; // Just a simple check to see if the database is accessible
+        } catch (Exception e) {
+            return false; // If any exception occurs, we assume the database is down
+        }
+    }
 }

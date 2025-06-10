@@ -20,6 +20,7 @@ public class ScheduledTasks {
     private static final Integer SYNC_XP_DATABASE = 3 * 60 * 1000;
 
     // Using Write-back/Write-behind caching strategy
+    // TODO
     @Scheduled(fixedRate = SYNC_XP_DATABASE)
     @Transactional
     public void syncXpDatabase() {
