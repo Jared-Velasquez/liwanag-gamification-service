@@ -1,10 +1,11 @@
 package com.liwanag.gamification.task;
 
 import com.liwanag.gamification.model.UserXp;
-import com.liwanag.gamification.service.XpService.XpDatabaseService;
-import com.liwanag.gamification.service.XpService.XpRedisService;
+import com.liwanag.gamification.service.xp.XpDatabaseService;
+import com.liwanag.gamification.service.xp.XpRedisService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -13,21 +14,22 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ScheduledTasks {
     private final XpRedisService xpRedisService;
     private final XpDatabaseService xpDatabaseService;
     // Three minutes
-    private static final int SYNC_XP_DATABASE = 3 * 60 * 1000;
+    private static final int SYNC_XP_DATABASE = 10 * 1000;
 
-    // Using Write-back/Write-behind caching strategy
-    // TODO
     @Scheduled(fixedRate = SYNC_XP_DATABASE)
     @Transactional
     public void syncXpDatabase() {
-        // Logic to sync XP from Redis to the database
-        // This could involve fetching all user XP from Redis and saving them to the database
-        // For example:
+        // Using Write-back/Write-behind caching strategy
+        // TODO: only sync dirty/modified XP entries, batch writes, add error handling, perform distributed locking
+        log.info("Syncing XP data from Redis to the database");
         List<UserXp> userXps = xpRedisService.getAllUserXps();
-        // userXps.forEach(userXp -> xpDatabaseService.saveUserXp(userXp.getUserId(), userXp.getXp()));
+        userXps.forEach(userXp -> {
+            xpDatabaseService.setUserXp(userXp.getUserId(), userXp.getXp(), userXp.getLastUpdated());
+        });
     }
 }

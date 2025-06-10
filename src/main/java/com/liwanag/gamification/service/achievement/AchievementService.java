@@ -1,4 +1,4 @@
-package com.liwanag.gamification.service;
+package com.liwanag.gamification.service.achievement;
 
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.liwanag.gamification.service.XpService;
+package com.liwanag.gamification.service.xp;
 
 import com.liwanag.gamification.model.UserXp;
 import com.liwanag.gamification.repository.UserXpRepository;
@@ -42,6 +42,21 @@ public class XpDatabaseService {
         UserXp newUserXp = new UserXp(userId, 0, Instant.now());
         repository.save(newUserXp);
         return 0;
+    }
+
+    @Transactional
+    public void setUserXp(UUID userId, Integer xp, Instant timestamp) {
+        log.info("Setting XP in database for user {} to {}", userId, xp);
+        if (repository.existsById(userId)) {
+            UserXp existingUserXp = repository.findById(userId).orElseThrow();
+            existingUserXp.setXp(xp);
+            existingUserXp.setLastUpdated(timestamp);
+            repository.save(existingUserXp);
+            return;
+        }
+
+        UserXp userXp = new UserXp(userId, xp, timestamp);
+        repository.save(userXp);
     }
 
     public boolean isDatabaseUp() {

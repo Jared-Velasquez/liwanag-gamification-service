@@ -1,7 +1,6 @@
 package com.liwanag.gamification.controller;
 
-import com.liwanag.gamification.dto.xp.GetXpRequest;
-import com.liwanag.gamification.service.XpService.XpService;
+import com.liwanag.gamification.service.xp.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

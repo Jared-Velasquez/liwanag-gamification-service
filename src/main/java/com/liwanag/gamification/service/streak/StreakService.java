@@ -1,4 +1,4 @@
-package com.liwanag.gamification.service;
+package com.liwanag.gamification.service.streak;
 
 import org.springframework.stereotype.Service;
 

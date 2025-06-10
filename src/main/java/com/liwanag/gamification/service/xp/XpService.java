@@ -1,6 +1,5 @@
-package com.liwanag.gamification.service.XpService;
+package com.liwanag.gamification.service.xp;
 
-import io.lettuce.core.RedisConnectionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

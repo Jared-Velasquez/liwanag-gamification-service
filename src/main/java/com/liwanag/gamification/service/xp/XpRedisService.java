@@ -1,4 +1,4 @@
-package com.liwanag.gamification.service.XpService;
+package com.liwanag.gamification.service.xp;
 
 import com.liwanag.gamification.model.UserXp;
 import lombok.RequiredArgsConstructor;
