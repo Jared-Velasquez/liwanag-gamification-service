@@ -25,11 +25,17 @@ public class ScheduledTasks {
     @Transactional
     public void syncXpDatabase() {
         // Using Write-back/Write-behind caching strategy
-        // TODO: only sync dirty/modified XP entries, batch writes, add error handling, perform distributed locking
+        // TODO: add error handling, perform distributed locking
         log.info("Syncing XP data from Redis to the database");
-        List<UserXp> userXps = xpRedisService.getAllUserXps();
-        userXps.forEach(userXp -> {
-            xpDatabaseService.setUserXp(userXp.getUserId(), userXp.getXp(), userXp.getLastUpdated());
-        });
+        List<UserXp> userXps = xpRedisService.getAllDirtyUserXps();
+        if (userXps.isEmpty()) {
+            log.info("No dirty user XPs found in Redis, skipping sync");
+            return;
+        }
+
+        log.info("Found {} dirty user XPs in Redis, syncing to database", userXps.size());
+        xpDatabaseService.setUserXpBatch(userXps);
+        log.info("XP data sync completed successfully");
+        xpRedisService.clearDirtyUsers();
     }
 }

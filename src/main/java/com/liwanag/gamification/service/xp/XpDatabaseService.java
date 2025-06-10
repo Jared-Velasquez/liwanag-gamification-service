@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,19 +45,37 @@ public class XpDatabaseService {
         return 0;
     }
 
-    @Transactional
-    public void setUserXp(UUID userId, Integer xp, Instant timestamp) {
-        log.info("Setting XP in database for user {} to {}", userId, xp);
-        if (repository.existsById(userId)) {
-            UserXp existingUserXp = repository.findById(userId).orElseThrow();
-            existingUserXp.setXp(xp);
-            existingUserXp.setLastUpdated(timestamp);
-            repository.save(existingUserXp);
-            return;
-        }
+//    @Transactional
+//    public void setUserXp(UUID userId, Integer xp, Instant timestamp) {
+//        log.info("Setting XP in database for user {} to {}", userId, xp);
+//        if (repository.existsById(userId)) {
+//            UserXp existingUserXp = repository.findById(userId).orElseThrow();
+//            existingUserXp.setXp(xp);
+//            existingUserXp.setLastUpdated(timestamp);
+//            repository.save(existingUserXp);
+//            return;
+//        }
+//
+//        UserXp userXp = new UserXp(userId, xp, timestamp);
+//        repository.save(userXp);
+//    }
 
-        UserXp userXp = new UserXp(userId, xp, timestamp);
-        repository.save(userXp);
+    @Transactional
+    public void setUserXp(UserXp userXp) {
+        log.info("Setting XP in database for user {} to {}", userXp.getUserId(), userXp.getXp());
+        if (repository.existsById(userXp.getUserId())) {
+            UserXp existingUserXp = repository.findById(userXp.getUserId()).orElseThrow();
+            existingUserXp.setXp(userXp.getXp());
+            existingUserXp.setLastUpdated(userXp.getLastUpdated());
+            repository.save(existingUserXp);
+        } else {
+            repository.save(userXp);
+        }
+    }
+
+    @Transactional
+    public void setUserXpBatch(List<UserXp> userXps) {
+        repository.saveAll(userXps);
     }
 
     public boolean isDatabaseUp() {
