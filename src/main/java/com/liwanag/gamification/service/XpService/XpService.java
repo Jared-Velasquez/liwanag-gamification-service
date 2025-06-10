@@ -41,5 +41,15 @@ public class XpService {
         return xp;
     }
 
-    public void setUserXp()
+    public void incrementUserXp(UUID userId, Integer deltaXp) {
+        // Logic to increment XP for a user
+        if (deltaXp == null || deltaXp <= 0) {
+            log.warn("Invalid XP increment value: {}", deltaXp);
+            return;
+        }
+
+        // If Redis is up, only increment Redis
+
+        // If Redis is down, fallback to database
+    }
 }
