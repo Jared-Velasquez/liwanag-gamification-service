@@ -18,14 +18,24 @@ import java.util.List;
 public class ScheduledTasks {
     private final XpRedisService xpRedisService;
     private final XpDatabaseService xpDatabaseService;
-    // Three minutes
-    private static final int SYNC_XP_DATABASE = 10 * 1000;
+    private static final int SYNC_XP_DATABASE = 3 * 60 * 1000; // Sync XP Redis and XP database every 3 minutes
 
     @Scheduled(fixedRate = SYNC_XP_DATABASE)
     @Transactional
     public void syncXpDatabase() {
         // Using Write-back/Write-behind caching strategy
         // TODO: add error handling, perform distributed locking
+
+        if (!xpRedisService.isRedisUp()) {
+            log.warn("Redis is down, skipping XP sync to database");
+            return;
+        }
+
+        if (!xpDatabaseService.isDatabaseUp()) {
+            log.error("Database is down, cannot sync XP data");
+            return;
+        }
+
         log.info("Syncing XP data from Redis to the database");
         List<UserXp> userXps = xpRedisService.getAllDirtyUserXps();
         if (userXps.isEmpty()) {
