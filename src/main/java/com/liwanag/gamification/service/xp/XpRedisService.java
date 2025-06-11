@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -16,12 +17,14 @@ import java.util.UUID;
 @Slf4j
 public class XpRedisService {
     private final RedisTemplate<String, Object> redisTemplate;
+    private final Duration XP_TTL = Duration.ofMinutes(15);
 
     @Transactional
     public void incrementUserXp(UUID userId, Integer deltaXp) {
         log.info("Incrementing XP in Redis for user {} by {}", userId, deltaXp);
         String key = "user:" + userId + ":xp";
         redisTemplate.opsForValue().increment(key, deltaXp);
+        redisTemplate.expire(key, XP_TTL);
 
         // Mark user as dirty
         redisTemplate.opsForSet().add("dirty_xp_users", userId);
@@ -38,7 +41,7 @@ public class XpRedisService {
     public void setUserXp(UUID userId, Integer xp) {
         log.info("Setting XP in Redis for user {} to {}", userId, xp);
         String key = "user:" + userId + ":xp";
-        redisTemplate.opsForValue().set(key, xp);
+        redisTemplate.opsForValue().set(key, xp, XP_TTL);
 
         // Mark user as dirty
         redisTemplate.opsForSet().add("dirty_xp_users", userId);

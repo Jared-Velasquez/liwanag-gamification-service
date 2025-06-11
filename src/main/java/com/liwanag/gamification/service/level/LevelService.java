@@ -15,12 +15,10 @@ public class LevelService {
     private final Double tuningConstant = 50.0;
 
     private Integer calculateLevel(Integer xp) {
-        log.info("Calculating level for XP: {}", xp);
         if (xp < 0) {
             throw new IllegalArgumentException("XP cannot be negative");
         }
 
-        // Simple level calculation based on XP
         return (int) Math.sqrt(xp / tuningConstant);
     }
 

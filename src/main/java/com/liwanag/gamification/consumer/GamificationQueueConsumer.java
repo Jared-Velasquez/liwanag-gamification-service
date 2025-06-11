@@ -8,6 +8,7 @@ import com.liwanag.gamification.dto.event.Event;
 import com.liwanag.gamification.service.achievement.AchievementService;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
 import com.liwanag.gamification.service.level.LevelService;
+import com.liwanag.gamification.service.streak.DailyStreakService;
 import com.liwanag.gamification.service.streak.StreakService;
 import com.liwanag.gamification.service.xp.XpService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
@@ -23,7 +24,7 @@ import java.util.UUID;
 public class GamificationQueueConsumer {
     private final AchievementService achievementService;
     private final LeaderboardService leaderboardService;
-    private final StreakService streakService;
+    private final DailyStreakService dailyStreakService;
     private final XpService xpService;
     private final LevelService levelService;
 
@@ -42,6 +43,7 @@ public class GamificationQueueConsumer {
         // achievementService.processMessage(message);
         // leaderboardService.updateLeaderboard(message);
         // streakService.updateStreak(message);
+        dailyStreakService.updateUserDailyStreak(UUID.fromString(event.getUserId()));
 
         // Handle experience points
         Integer currentXp = xpService.getUserXp(UUID.fromString(event.getUserId()));

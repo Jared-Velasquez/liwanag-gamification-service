@@ -12,7 +12,7 @@ payload = {
     "questionId": "67890",
     "activityId": "abcde",
     "result": "correct",
-    "xpGained": 250
+    "xpGained": 10
 }
 # Sample event
 # This is correct and required casing or this API to work; boto3 will
