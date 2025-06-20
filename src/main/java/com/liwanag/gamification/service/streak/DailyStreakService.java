@@ -2,6 +2,7 @@ package com.liwanag.gamification.service.streak;
 
 import com.liwanag.gamification.model.UserDailyStreak;
 import com.liwanag.gamification.repository.UserDailyStreakRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,10 +39,32 @@ public class DailyStreakService {
         repository.save(streak);
     }
 
+    // TODO: make resetting into a scheduled job? If the user has a high streak and then becomes inactive, the
+    // streak won't reset with this code.
+    @Transactional
     public Integer getUserDailyStreak(UUID userId) {
         log.info("Fetching daily streak for user {}", userId);
-        return repository.findById(userId)
-                .map(UserDailyStreak::getStreak)
-                .orElse(0);
+        // If the user's streak is queried and the last active date is not yesterday or today,
+        // reset the streak
+        UserDailyStreak userDailyStreak = repository.findById(userId).orElse(null);
+
+        if (userDailyStreak != null) {
+            LocalDate lastActiveDate = userDailyStreak.getLastActiveDate();
+            LocalDate today = LocalDate.now();
+
+            if (lastActiveDate == null || !lastActiveDate.isEqual(today) && !lastActiveDate.isEqual(today.minusDays(1))) {
+                log.info("Resetting streak for user {} due to inactivity", userId);
+                userDailyStreak.setStreak(0);
+                userDailyStreak.setLastActiveDate(today);
+                repository.save(userDailyStreak);
+
+                return 0;
+            }
+
+            return userDailyStreak.getStreak();
+        }
+
+        log.info("No streak found for user {}, returning 0", userId);
+        return 0;
     }
 }
