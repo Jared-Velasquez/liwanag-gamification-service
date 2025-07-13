@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "t_user_xp")
-@RedisHash("user")
+// @RedisHash("user")
 @Getter
 @Setter
 @AllArgsConstructor
