@@ -7,12 +7,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.redis.core.RedisHash;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "t_user_xp")
+@RedisHash("user")
 @Getter
 @Setter
 @AllArgsConstructor
