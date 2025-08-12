@@ -75,6 +75,7 @@ public class XpDatabaseService {
 
     @Transactional
     public void setUserXpBatch(List<UserXp> userXps) {
+        List<UserXp> masterData = repository.findAllById(userXps.stream().map(UserXp::getUserId).toList());
         repository.saveAll(userXps);
     }
 

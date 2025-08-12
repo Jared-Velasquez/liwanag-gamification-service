@@ -8,15 +8,12 @@ import org.springframework.http.ResponseEntity;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.liwanag.gamification.utils.Exceptions.convertErrorToResponse;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(value = IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> illegalArgument(IllegalArgumentException iae) {
-        HashMap<String, String> map = new HashMap<>();
-        map.put("error", iae.getMessage());
-        return new ResponseEntity<>(
-                map,
-                HttpStatus.BAD_REQUEST
-        );
+        return convertErrorToResponse(iae, HttpStatus.BAD_REQUEST);
     }
 }

@@ -1,6 +1,7 @@
 package com.liwanag.gamification.service.xp;
 
 import com.liwanag.gamification.model.UserXp;
+import com.liwanag.gamification.utils.Redis;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +23,7 @@ public class XpRedisService {
     @Transactional
     public void incrementUserXp(UUID userId, Integer deltaXp) {
         log.info("Incrementing XP in Redis for user {} by {}", userId, deltaXp);
-        String key = "user:" + userId + ":xp";
+        String key = Redis.generateUserXpKey(userId);
         redisTemplate.opsForValue().increment(key, deltaXp);
         redisTemplate.expire(key, XP_TTL);
 
@@ -32,7 +33,7 @@ public class XpRedisService {
 
     public Integer getUserXp(UUID userId) {
         log.info("Fetching XP from Redis for user {}", userId.toString());
-        String key = "user:" + userId + ":xp";
+        String key = Redis.generateUserXpKey(userId);
         return redisTemplate.opsForValue().get(key) != null ?
                (Integer) redisTemplate.opsForValue().get(key) : null;
     }
@@ -40,7 +41,7 @@ public class XpRedisService {
     @Transactional
     public void setUserXp(UUID userId, Integer xp) {
         log.info("Setting XP in Redis for user {} to {}", userId, xp);
-        String key = "user:" + userId + ":xp";
+        String key = Redis.generateUserXpKey(userId);
         redisTemplate.opsForValue().set(key, xp, XP_TTL);
 
         // Mark user as dirty
