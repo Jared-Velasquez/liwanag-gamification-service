@@ -6,13 +6,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AnswerEvaluatedEvent {
-    private String userId;
+    public enum Result {
+        CORRECT,
+        INCORRECT
+    }
+
+    private UUID userId;
     private String questionId;
     private String activityId;
     private String episodeId;
@@ -20,4 +26,8 @@ public class AnswerEvaluatedEvent {
     private String result;
     private Integer xpGained;
     private Instant timestamp;
+
+    public Result getEnumResult() {
+        return Result.valueOf(this.result.toUpperCase());
+    }
 }
