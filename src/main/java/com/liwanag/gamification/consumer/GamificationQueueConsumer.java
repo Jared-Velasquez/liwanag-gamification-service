@@ -8,16 +8,13 @@ import com.liwanag.gamification.dto.event.Event;
 import com.liwanag.gamification.service.achievement.AchievementService;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
 import com.liwanag.gamification.service.level.LevelService;
-import com.liwanag.gamification.service.streak.ComboStreakService;
-import com.liwanag.gamification.service.streak.DailyStreakService;
-import com.liwanag.gamification.service.streak.StreakService;
+import com.liwanag.gamification.service.streaks.ComboStreakService;
+import com.liwanag.gamification.service.streaks.DailyStreakService;
 import com.liwanag.gamification.service.xp.XpService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor

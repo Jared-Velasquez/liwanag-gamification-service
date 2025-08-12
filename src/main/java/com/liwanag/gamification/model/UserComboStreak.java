@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -22,5 +23,5 @@ public class UserComboStreak {
     private UUID userId;
     private Integer streak;
     private Integer maxStreak;
-    private LocalDate lastActiveDate;
+    private Instant lastActiveDate;
 }

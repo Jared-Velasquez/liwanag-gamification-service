@@ -1,6 +1,6 @@
 package com.liwanag.gamification.controller;
 
-import com.liwanag.gamification.service.streak.DailyStreakService;
+import com.liwanag.gamification.service.streaks.DailyStreakService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
