@@ -1,6 +1,7 @@
 package com.liwanag.gamification.controller;
 
 import com.liwanag.gamification.dto.streaks.GetComboStreaksResponse;
+import com.liwanag.gamification.dto.streaks.GetDailyStreaksResponse;
 import com.liwanag.gamification.service.streaks.ComboStreakService;
 import com.liwanag.gamification.service.streaks.DailyStreakService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,8 @@ public class StreakController {
 
     @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Integer getUserStreak(@PathVariable String userId) {
-        return dailyStreakService.getUserDailyStreak(UUID.fromString(userId));
+    public GetDailyStreaksResponse getUserStreak(@PathVariable String userId) {
+        return dailyStreakService.getDailyStreaks(UUID.fromString(userId));
     }
 
     @GetMapping("/{userId}/combo")

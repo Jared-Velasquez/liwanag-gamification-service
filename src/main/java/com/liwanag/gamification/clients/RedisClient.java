@@ -51,7 +51,6 @@ public class RedisClient {
     }
 
     public void vSet(String key, String value, Long ttl) {
-        log.info("Value: {}", value);
         withCircuitBreaker(
                 () -> {
                     strRedisTemplate.opsForValue().set(key, value, Duration.ofSeconds(ttl));

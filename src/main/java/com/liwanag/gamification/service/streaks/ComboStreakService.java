@@ -29,9 +29,7 @@ public class ComboStreakService {
         log.info("Incrementing combo streak in database for user {}", userId);
         UserComboStreak updated = repository.findById(userId).map(streak -> {
             Integer incremented = streak.getStreak() + 1;
-            log.info("Setting incremented to {}", incremented);
             streak.setStreak(incremented);
-            log.info("Setting max to {}", Math.max(streak.getMaxStreak(), incremented));
             streak.setMaxStreak(Math.max(streak.getMaxStreak(), incremented));
             return repository.save(streak);
         }).orElseGet(() -> repository.save(new UserComboStreak(userId, 1, 1, Instant.now())));
