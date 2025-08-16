@@ -34,7 +34,7 @@ public class XpRedisService {
         log.info("Fetching XP from Redis for user {}", userId.toString());
         String key = "user:" + userId + ":xp";
         return redisTemplate.opsForValue().get(key) != null ?
-               (Integer) redisTemplate.opsForValue().get(key) : null;
+                (Integer) redisTemplate.opsForValue().get(key) : null;
     }
 
     @Transactional

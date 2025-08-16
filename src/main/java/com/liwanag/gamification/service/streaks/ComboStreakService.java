@@ -29,7 +29,9 @@ public class ComboStreakService {
         log.info("Incrementing combo streak in database for user {}", userId);
         UserComboStreak updated = repository.findById(userId).map(streak -> {
             Integer incremented = streak.getStreak() + 1;
+            log.info("Setting incremented to {}", incremented);
             streak.setStreak(incremented);
+            log.info("Setting max to {}", Math.max(streak.getMaxStreak(), incremented));
             streak.setMaxStreak(Math.max(streak.getMaxStreak(), incremented));
             return repository.save(streak);
         }).orElseGet(() -> repository.save(new UserComboStreak(userId, 1, 1, Instant.now())));
@@ -75,18 +77,22 @@ public class ComboStreakService {
 
         String streakKey = RedisKeys.getComboStreakKey(userId);
         String maxStreakKey = RedisKeys.getMaxComboStreakKey(userId);
-        Integer streak = redisClient.vGet(streakKey).map(Integer::valueOf).orElse(null);
-        Integer maxStreak = redisClient.vGet(maxStreakKey).map(Integer::valueOf).orElse(null);
+        String streak = redisClient.vGet(streakKey).orElse(null);
+        String maxStreak = redisClient.vGet(maxStreakKey).orElse(null);
 
         // If both streak and maxStreak were found, immediately return
         if (streak != null && maxStreak != null) {
-            return new GetComboStreaksResponse(streak, maxStreak);
+            return new GetComboStreaksResponse(Integer.valueOf(streak), Integer.valueOf(maxStreak));
         }
 
         // Else query from database
         UserComboStreak data = repository.findById(userId).orElseGet(
                 () -> repository.save(new UserComboStreak(userId, 0, 0, Instant.now()))
         );
+
+        // Then hydrate Redis
+        redisClient.vSet(streakKey, data.getStreak().toString(), TimeConstants.TEN_MINUTES);
+        redisClient.vSet(maxStreakKey, data.getMaxStreak().toString(), TimeConstants.TEN_MINUTES);
 
         return new GetComboStreaksResponse(data.getStreak(), data.getMaxStreak());
     }
