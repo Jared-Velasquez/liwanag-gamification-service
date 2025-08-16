@@ -1,5 +1,6 @@
-package com.liwanag.gamification.service.streak;
+package com.liwanag.gamification.service.streaks;
 
+import com.liwanag.gamification.dto.streaks.GetDailyStreaksResponse;
 import com.liwanag.gamification.model.UserDailyStreak;
 import com.liwanag.gamification.repository.UserDailyStreakRepository;
 import jakarta.transaction.Transactional;
@@ -42,7 +43,7 @@ public class DailyStreakService {
     // TODO: make resetting into a scheduled job? If the user has a high streak and then becomes inactive, the
     // streak won't reset with this code.
     @Transactional
-    public Integer getUserDailyStreak(UUID userId) {
+    public GetDailyStreaksResponse getDailyStreaks(UUID userId) {
         log.info("Fetching daily streak for user {}", userId);
         // If the user's streak is queried and the last active date is not yesterday or today,
         // reset the streak
@@ -57,14 +58,12 @@ public class DailyStreakService {
                 userDailyStreak.setStreak(0);
                 userDailyStreak.setLastActiveDate(today);
                 repository.save(userDailyStreak);
-
-                return 0;
             }
 
-            return userDailyStreak.getStreak();
+            return new GetDailyStreaksResponse(userDailyStreak.getStreak(), userDailyStreak.getMaxStreak());
         }
 
         log.info("No streak found for user {}, returning 0", userId);
-        return 0;
+        return new GetDailyStreaksResponse(0, 0);
     }
 }

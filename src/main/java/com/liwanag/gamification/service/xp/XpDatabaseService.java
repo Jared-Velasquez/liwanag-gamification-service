@@ -21,12 +21,12 @@ public class XpDatabaseService {
     public void incrementUserXp(UUID userId, Integer xp, Instant timestamp) {
         log.info("Incrementing XP in database for user {} by {}", userId, xp);
         repository.findById(userId).ifPresentOrElse(
-            userXp -> {
-                userXp.setXp(userXp.getXp() + xp);
-                userXp.setLastUpdated(timestamp);
-                repository.save(userXp);
-            },
-            () -> repository.save(new UserXp(userId, xp, timestamp))
+                userXp -> {
+                    userXp.setXp(userXp.getXp() + xp);
+                    userXp.setLastUpdated(timestamp);
+                    repository.save(userXp);
+                },
+                () -> repository.save(new UserXp(userId, xp, timestamp))
         );
     }
 
@@ -35,8 +35,8 @@ public class XpDatabaseService {
         log.info("Fetching XP from database for user {}", userId);
         if (repository.existsById(userId)) {
             return repository.findById(userId)
-                .map(UserXp::getXp)
-                .orElse(0);
+                    .map(UserXp::getXp)
+                    .orElse(0);
         }
 
         // Create a new UserXp entry with 0 XP if it doesn't exist
