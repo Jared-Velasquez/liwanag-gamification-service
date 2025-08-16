@@ -10,4 +10,8 @@ public class RedisKeys {
     public static String getMaxComboStreakKey(UUID userId) {
         return String.format("user:%s:maxcombo", userId);
     }
+
+    public static String getExperienceKey(UUID userId) {
+        return String.format("user:%s:experience", userId);
+    }
 }

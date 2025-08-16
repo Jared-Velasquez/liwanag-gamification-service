@@ -6,15 +6,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liwanag.gamification.dto.event.AnswerEvaluatedEvent;
 import com.liwanag.gamification.dto.event.Event;
 import com.liwanag.gamification.service.achievement.AchievementService;
+import com.liwanag.gamification.service.experience.ExperienceService;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
-import com.liwanag.gamification.service.xp.XpService;
-import com.liwanag.gamification.service.level.LevelService;
 import com.liwanag.gamification.service.streaks.ComboStreakService;
 import com.liwanag.gamification.service.streaks.DailyStreakService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -24,8 +25,7 @@ public class GamificationQueueConsumer {
     private final LeaderboardService leaderboardService;
     private final ComboStreakService comboStreakService;
     private final DailyStreakService dailyStreakService;
-    private final XpService xpService;
-    private final LevelService levelService;
+    private final ExperienceService experienceService;
 
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
@@ -37,22 +37,26 @@ public class GamificationQueueConsumer {
         System.out.println(event.getResult());
         System.out.println(event.getUserId());
 
+        UUID userId = event.getUserId();
+
 
         // Process the message and call the appropriate service methods
         // achievementService.processMessage(message);
         // leaderboardService.updateLeaderboard(message);
         // streakService.updateStreak(message);
         comboStreakService.updateComboStreak(event);
-        dailyStreakService.updateUserDailyStreak(event.getUserId());
+        dailyStreakService.updateUserDailyStreak(userId);
 
         // Handle experience points
-        Integer currentXp = xpService.getUserXp(event.getUserId());
-        xpService.incrementUserXp(event.getUserId(), event.getXpGained());
-        Integer newXp = xpService.getUserXp(event.getUserId());
+        Integer baseExperience = experienceService.getExperience(userId);
+        Integer deltaExperience = event.getXpGained();
+        experienceService.incrementExperience(userId, deltaExperience);
 
-        if (currentXp != null && newXp != null && levelService.checkLevelUp(currentXp, newXp)) {
-            Integer newLevel = levelService.checkUserLevel(event.getUserId());
-            log.info("User {} leveled up to level {}", event.getUserId(), newLevel);
+        if (experienceService.hasLeveledUp(baseExperience, deltaExperience)) {
+            // TODO: emit event to NotificationService
+            Integer baseLevel = experienceService.calculateLevelFromExperience(baseExperience);
+            Integer newLevel = experienceService.calculateLevelFromExperience(baseExperience + deltaExperience);
+            log.info("User has leveled up from {} to {}", baseLevel, newLevel);
         }
     }
 }

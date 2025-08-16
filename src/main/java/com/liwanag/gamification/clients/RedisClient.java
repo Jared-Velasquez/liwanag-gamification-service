@@ -18,13 +18,16 @@ import java.util.function.Supplier;
 @Component
 @Slf4j
 public class RedisClient {
+    private final RedisTemplate<String, Object> redisTemplate;
     private final RedisTemplate<String, String> strRedisTemplate;
     private final CircuitBreakerRegistry registry;
 
     public RedisClient(
+            @Qualifier("redisTemplate") RedisTemplate<String, Object> redisTemplate,
             @Qualifier("strRedisTemplate") RedisTemplate<String, String> strRedisTemplate,
             CircuitBreakerRegistry registry
     ) {
+        this.redisTemplate = redisTemplate;
         this.strRedisTemplate = strRedisTemplate;
         this.registry = registry;
     }
@@ -54,6 +57,16 @@ public class RedisClient {
         withCircuitBreaker(
                 () -> {
                     strRedisTemplate.opsForValue().set(key, value, Duration.ofSeconds(ttl));
+                    return null;
+                },
+                () -> null
+        );
+    }
+
+    public void invalidateKey(String key) {
+        withCircuitBreaker(
+                () -> {
+                    redisTemplate.delete(key);
                     return null;
                 },
                 () -> null
