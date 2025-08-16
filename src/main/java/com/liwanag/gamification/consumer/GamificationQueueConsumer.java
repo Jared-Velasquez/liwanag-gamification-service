@@ -48,15 +48,17 @@ public class GamificationQueueConsumer {
         dailyStreakService.updateUserDailyStreak(userId);
 
         // Handle experience points
-        Integer baseExperience = experienceService.getExperience(userId);
-        Integer deltaExperience = event.getXpGained();
-        experienceService.incrementExperience(userId, deltaExperience);
+        if (event.getXpGained() != null) {
+            Integer baseExperience = experienceService.getExperience(userId);
+            Integer deltaExperience = event.getXpGained();
+            experienceService.incrementExperience(userId, deltaExperience);
 
-        if (experienceService.hasLeveledUp(baseExperience, deltaExperience)) {
-            // TODO: emit event to NotificationService
-            Integer baseLevel = experienceService.calculateLevelFromExperience(baseExperience);
-            Integer newLevel = experienceService.calculateLevelFromExperience(baseExperience + deltaExperience);
-            log.info("User has leveled up from {} to {}", baseLevel, newLevel);
+            if (experienceService.hasLeveledUp(baseExperience, deltaExperience)) {
+                // TODO: emit event to NotificationService
+                Integer baseLevel = experienceService.calculateLevelFromExperience(baseExperience);
+                Integer newLevel = experienceService.calculateLevelFromExperience(baseExperience + deltaExperience);
+                log.info("User has leveled up from {} to {}", baseLevel, newLevel);
+            }
         }
     }
 }
