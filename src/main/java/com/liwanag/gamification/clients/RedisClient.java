@@ -63,6 +63,30 @@ public class RedisClient {
         );
     }
 
+    public <T> Optional<T> hGet(String key, Class<T> type) {
+        return withCircuitBreaker(() -> {
+                Object value = redisTemplate.opsForValue().get(key);
+                if (!type.isInstance(value)) {
+                    log.warn("Unexpected type from Redis. Expected {}, got {}", type, value != null ? value.getClass() : "null");
+                    return Optional.empty();
+                }
+
+                return Optional.of(type.cast(value));
+            },
+            Optional::empty
+        );
+    }
+
+    public <T> void hSet(String key, T value, Long ttl) {
+        withCircuitBreaker(
+                () -> {
+                    redisTemplate.opsForValue().set(key, value, Duration.ofSeconds(ttl));
+                    return null;
+                },
+                () -> null
+        );
+    }
+
     public void invalidateKey(String key) {
         withCircuitBreaker(
                 () -> {
