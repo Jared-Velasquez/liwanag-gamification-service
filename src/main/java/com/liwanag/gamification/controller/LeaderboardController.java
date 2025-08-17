@@ -12,17 +12,21 @@ import org.springframework.web.bind.annotation.*;
 public class LeaderboardController {
     private final LeaderboardService leaderboardService;
 
-    @GetMapping("/top-levels/{count}")
+    @GetMapping("/levels")
     @ResponseStatus(HttpStatus.OK)
-    public void getTopLevels(@PathVariable String count) {
-        Integer numUsers = Validators.convertToInteger(count);
-        if (numUsers == null || numUsers <= 0) {
-            throw new IllegalArgumentException("Count must be a valid positive integer.");
+    public void getTopLevels(@RequestParam(value = "count", defaultValue = "5") Integer count, @RequestParam(value = "page", defaultValue = "0") Integer page) {
+        if (count <= 0) {
+            throw new IllegalArgumentException("Count must be a positive integer.");
         }
-        leaderboardService.getTopLevels(numUsers);
+
+        if (page < 0) {
+            throw new IllegalArgumentException("Page must be a non-negative integer.");
+        }
+
+        leaderboardService.getTopLevels(count, page);
     }
 
-    @GetMapping("/top-streaks/{count}")
+    @GetMapping("/streaks/{count}")
     @ResponseStatus(HttpStatus.OK)
     public void getTopStreaks(@PathVariable String count) {
         Integer numUsers = Validators.convertToInteger(count);
@@ -32,7 +36,7 @@ public class LeaderboardController {
         leaderboardService.getTopStreaks(numUsers);
     }
 
-    @GetMapping("/top-answered/{count}")
+    @GetMapping("/answered/{count}")
     @ResponseStatus(HttpStatus.OK)
     public void getTopAnswered(@PathVariable String count) {
         Integer numUsers = Validators.convertToInteger(count);
