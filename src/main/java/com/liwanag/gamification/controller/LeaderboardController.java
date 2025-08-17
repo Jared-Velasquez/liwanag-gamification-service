@@ -1,10 +1,13 @@
 package com.liwanag.gamification.controller;
 
+import com.liwanag.gamification.dto.leaderboard.GetTopLevelsResponse;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
 import com.liwanag.gamification.utils.Validators;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/leaderboards")
@@ -14,7 +17,10 @@ public class LeaderboardController {
 
     @GetMapping("/levels")
     @ResponseStatus(HttpStatus.OK)
-    public void getTopLevels(@RequestParam(value = "count", defaultValue = "5") Integer count, @RequestParam(value = "page", defaultValue = "0") Integer page) {
+    public List<GetTopLevelsResponse> getTopLevels(
+            @RequestParam(value = "count", defaultValue = "5") Integer count,
+            @RequestParam(value = "page", defaultValue = "0") Integer page
+    ) {
         if (count <= 0) {
             throw new IllegalArgumentException("Count must be a positive integer.");
         }
@@ -23,7 +29,7 @@ public class LeaderboardController {
             throw new IllegalArgumentException("Page must be a non-negative integer.");
         }
 
-        leaderboardService.getTopLevels(count, page);
+        return leaderboardService.getTopLevels(count, page);
     }
 
     @GetMapping("/streaks/{count}")
