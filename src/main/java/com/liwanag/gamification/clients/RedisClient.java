@@ -9,8 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.StringRedisConnection;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Component;
 import io.vavr.control.Try;
@@ -52,6 +51,15 @@ public class RedisClient {
                     return fallback.get();
                 })
                 .get();
+    }
+
+    private void withCircuitBreakerNoWork(Runnable run, Runnable fallback) {
+        try {
+            CircuitBreaker.decorateRunnable(getCircuitBreaker(), run).run();
+        } catch (Exception e) {
+            log.warn("Redis Circuit Breaker triggered: {}", e.toString());
+            fallback.run();
+        }
     }
 
     public Optional<String> vGet(String key) {
@@ -121,18 +129,19 @@ public class RedisClient {
     }
 
     public <T> void hSetBulk(List<KeyObjectPair<T>> pairs, Long ttl) {
-        withCircuitBreaker(() -> {
-                    redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-                        StringRedisConnection strConnection = (StringRedisConnection) connection;
-                        pairs.forEach(pair -> {
-                            strConnection.set(pair.getKey(), pair.getObj());
-                        });
+        withCircuitBreaker(
+                () -> redisTemplate.executePipelined(new SessionCallback<Void>() {
+                    @Override
+                    public Void execute(RedisOperations operations) {
+                        ValueOperations<String, Object> vops = (ValueOperations<String, Object>) operations.opsForValue();
+
+                        for (KeyObjectPair<T> pair : pairs) {
+                            vops.set(pair.getKey(), pair.getObj());
+                        }
 
                         return null;
-                    });
-
-                    return null;
-                },
+                    }
+                }),
                 () -> null
         );
     }
