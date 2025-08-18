@@ -1,17 +1,25 @@
 package com.liwanag.gamification.clients;
 
+import com.liwanag.gamification.utils.KeyObjectPair;
 import com.liwanag.gamification.utils.TimeConstants;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.StringRedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Component;
 import io.vavr.control.Try;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -68,7 +76,7 @@ public class RedisClient {
                 Object value = redisTemplate.opsForValue().get(key);
                 if (!type.isInstance(value)) {
                     log.warn("Unexpected type from Redis. Expected {}, got {}", type, value != null ? value.getClass() : "null");
-                    return Optional.empty();
+                    throw new SerializationException("Error deserializing Redis data");
                 }
 
                 return Optional.of(type.cast(value));
@@ -77,10 +85,52 @@ public class RedisClient {
         );
     }
 
+    public <T> List<T> hGetBulk(List<String> keys, Class<T> type) {
+        return withCircuitBreaker(() -> {
+                // Fetch the list of objects from Redis
+                List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+                    StringRedisConnection strConnection = (StringRedisConnection) connection;
+                    keys.forEach(strConnection::get);
+                    return null;
+                });
+
+                // Then convert each of the results into type T
+                List<T> typedResults = new ArrayList<>(results.size());
+                for (Object obj : results) {
+                    if (obj != null && type.isInstance(obj)) {
+                        typedResults.add(type.cast(obj));
+                    } else {
+                        log.warn("Unexpected type from Redis. Expected {}, got {}", type, obj != null ? obj.getClass() : "null");
+                        throw new SerializationException("Error deserializing Redis data");
+                    }
+                }
+
+                return typedResults;
+            },
+            List::of
+        );
+    }
+
     public <T> void hSet(String key, T value, Long ttl) {
-        withCircuitBreaker(
-                () -> {
+        withCircuitBreaker(() -> {
                     redisTemplate.opsForValue().set(key, value, Duration.ofSeconds(ttl));
+                    return null;
+                },
+                () -> null
+        );
+    }
+
+    public <T> void hSetBulk(List<KeyObjectPair<T>> pairs, Long ttl) {
+        withCircuitBreaker(() -> {
+                    redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+                        StringRedisConnection strConnection = (StringRedisConnection) connection;
+                        pairs.forEach(pair -> {
+                            strConnection.set(pair.getKey(), pair.getObj());
+                        });
+
+                        return null;
+                    });
+
                     return null;
                 },
                 () -> null
