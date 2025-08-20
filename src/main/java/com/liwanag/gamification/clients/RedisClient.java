@@ -93,27 +93,57 @@ public class RedisClient {
         );
     }
 
+//    public <T> List<T> hGetBulk(List<String> keys, Class<T> type) {
+//        return withCircuitBreaker(() -> {
+//                // Fetch the list of objects from Redis
+//                List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+//                    StringRedisConnection strConnection = (StringRedisConnection) connection;
+//                    keys.forEach(strConnection::get);
+//                    return null;
+//                });
+//
+//                // Then convert each of the results into type T
+//                List<T> typedResults = new ArrayList<>(results.size());
+//                for (Object obj : results) {
+//                    if (obj != null && type.isInstance(obj)) {
+//                        typedResults.add(type.cast(obj));
+//                    } else {
+//                        log.warn("Unexpected type from Redis. Expected {}, got {}", type, obj != null ? obj.getClass() : "null");
+//                        throw new SerializationException("Error deserializing Redis data");
+//                    }
+//                }
+//
+//                return typedResults;
+//            },
+//            List::of
+//        );
+//    }
+
     public <T> List<T> hGetBulk(List<String> keys, Class<T> type) {
         return withCircuitBreaker(() -> {
-                // Fetch the list of objects from Redis
-                List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-                    StringRedisConnection strConnection = (StringRedisConnection) connection;
-                    keys.forEach(strConnection::get);
-                    return null;
+                List<Object> raw = redisTemplate.executePipelined(new SessionCallback<Object>() {
+                    @Override
+                    public Object execute(RedisOperations operations) {
+                        ValueOperations<String, T> vops = operations.opsForValue();
+
+                        for (String key : keys) {
+                            vops.get(key);
+                        }
+
+                        return null;
+                    }
                 });
 
-                // Then convert each of the results into type T
-                List<T> typedResults = new ArrayList<>(results.size());
-                for (Object obj : results) {
-                    if (obj != null && type.isInstance(obj)) {
-                        typedResults.add(type.cast(obj));
-                    } else {
-                        log.warn("Unexpected type from Redis. Expected {}, got {}", type, obj != null ? obj.getClass() : "null");
-                        throw new SerializationException("Error deserializing Redis data");
-                    }
-                }
+                List<T> results = new ArrayList<>();
 
-                return typedResults;
+                for (Object obj : raw) {
+                    if (obj == null) { results.add(null); continue; }
+                    if (!type.isInstance(obj)) {
+                        throw new SerializationException("Expected " + type.getName() + " but got " + obj.getClass().getName());
+                    }
+                    results.add(type.cast(obj));
+                }
+                return results;
             },
             List::of
         );
@@ -133,12 +163,10 @@ public class RedisClient {
                 () -> redisTemplate.executePipelined(new SessionCallback<Void>() {
                     @Override
                     public Void execute(RedisOperations operations) {
-                        ValueOperations<String, Object> vops = (ValueOperations<String, Object>) operations.opsForValue();
-
+                        ValueOperations<String, T> vops = (ValueOperations<String, T>) operations.opsForValue();
                         for (KeyObjectPair<T> pair : pairs) {
-                            vops.set(pair.getKey(), pair.getObj());
+                            vops.set(pair.getKey(), pair.getObj(), Duration.ofSeconds(ttl));
                         }
-
                         return null;
                     }
                 }),
