@@ -26,7 +26,9 @@ public class UserDailyStreak {
     private Integer maxStreak;
 
     @CreatedDate
+    @Column(updatable = false, nullable = false)
     private Instant createdAt;
     @LastModifiedDate
+    @Column(nullable = false)
     private Instant updatedAt;
 }

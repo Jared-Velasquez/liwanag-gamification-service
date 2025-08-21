@@ -24,7 +24,9 @@ public class UserExperience {
     private Integer experience;
 
     @CreatedDate
+    @Column(updatable = false, nullable = false)
     private Instant createdAt;
     @LastModifiedDate
+    @Column(nullable = false)
     private Instant updatedAt;
 }

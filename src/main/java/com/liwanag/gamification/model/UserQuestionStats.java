@@ -1,5 +1,6 @@
 package com.liwanag.gamification.model;
 
+import com.liwanag.gamification.dto.event.AnswerEvaluatedEvent;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,20 +11,20 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "t_user_combo_streak")
+@Table(name = "t_user_question_stats")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @RequiredArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserComboStreak {
+public class UserQuestionStats {
     @Id
     @NonNull
     private UUID userId;
     @NonNull
-    private Integer streak;
+    private Integer attemptedCount;
     @NonNull
-    private Integer maxStreak;
+    private Integer correctCount;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)

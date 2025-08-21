@@ -61,10 +61,4 @@ public class LeaderboardService {
 
         return response;
     }
-
-    // Example method to get top answered questions
-    public void getTopAnswered(int count) {
-        log.info("Fetching top {} answered questions", count);
-        // Logic to fetch top answered questions
-    }
 }
