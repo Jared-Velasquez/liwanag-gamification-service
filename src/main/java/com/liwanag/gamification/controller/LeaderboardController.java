@@ -1,6 +1,7 @@
 package com.liwanag.gamification.controller;
 
 import com.liwanag.gamification.dto.leaderboard.GetTopComboStreaksResponse;
+import com.liwanag.gamification.dto.leaderboard.GetTopCorrectResponse;
 import com.liwanag.gamification.dto.leaderboard.GetTopDailyStreaksResponse;
 import com.liwanag.gamification.dto.leaderboard.GetTopLevelsResponse;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
@@ -68,20 +69,20 @@ public class LeaderboardController {
         return leaderboardService.getTopDailyStreaks(count, page);
     }
 
-//    @GetMapping("/answered")
-//    @ResponseStatus(HttpStatus.OK)
-//    public void getTopAnswered(
-//            @RequestParam(value = "count", defaultValue = "5") Integer count,
-//            @RequestParam(value = "page", defaultValue = "0") Integer page
-//    ) {
-//        if (count <= 0) {
-//            throw new IllegalArgumentException("Count must be a positive integer.");
-//        }
-//
-//        if (page < 0) {
-//            throw new IllegalArgumentException("Page must be a non-negative integer.");
-//        }
-//
-//        return leaderboardService.getTopAnswered(numUsers);
-//    }
+    @GetMapping("/correct")
+    @ResponseStatus(HttpStatus.OK)
+    public List<GetTopCorrectResponse> getTopCorrect(
+            @RequestParam(value = "count", defaultValue = "5") Integer count,
+            @RequestParam(value = "page", defaultValue = "0") Integer page
+    ) {
+        if (count <= 0) {
+            throw new IllegalArgumentException("Count must be a positive integer.");
+        }
+
+        if (page < 0) {
+            throw new IllegalArgumentException("Page must be a non-negative integer.");
+        }
+
+        return leaderboardService.getTopCorrect(count, page);
+    }
 }

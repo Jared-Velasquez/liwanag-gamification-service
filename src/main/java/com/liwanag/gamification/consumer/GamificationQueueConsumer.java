@@ -8,6 +8,7 @@ import com.liwanag.gamification.dto.event.Event;
 import com.liwanag.gamification.service.achievement.AchievementService;
 import com.liwanag.gamification.service.experience.ExperienceService;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
+import com.liwanag.gamification.service.questionstats.QuestionStatsService;
 import com.liwanag.gamification.service.streaks.ComboStreakService;
 import com.liwanag.gamification.service.streaks.DailyStreakService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
@@ -21,10 +22,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class GamificationQueueConsumer {
-    private final AchievementService achievementService;
-    private final LeaderboardService leaderboardService;
     private final ComboStreakService comboStreakService;
     private final DailyStreakService dailyStreakService;
+    private final QuestionStatsService questionStatsService;
     private final ExperienceService experienceService;
 
     @SqsListener(value = "GamificationQueue")
@@ -42,10 +42,11 @@ public class GamificationQueueConsumer {
 
         // Process the message and call the appropriate service methods
         // achievementService.processMessage(message);
-        // leaderboardService.updateLeaderboard(message);
         // streakService.updateStreak(message);
         comboStreakService.updateComboStreak(event);
         dailyStreakService.updateUserDailyStreak(userId);
+        questionStatsService.recordAnswer(event);
+
 
         // Handle experience points
         if (event.getXpGained() != null) {

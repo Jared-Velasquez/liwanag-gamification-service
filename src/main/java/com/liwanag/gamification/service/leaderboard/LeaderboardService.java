@@ -2,14 +2,17 @@ package com.liwanag.gamification.service.leaderboard;
 
 import com.liwanag.gamification.clients.RedisClient;
 import com.liwanag.gamification.dto.leaderboard.GetTopComboStreaksResponse;
+import com.liwanag.gamification.dto.leaderboard.GetTopCorrectResponse;
 import com.liwanag.gamification.dto.leaderboard.GetTopDailyStreaksResponse;
 import com.liwanag.gamification.dto.leaderboard.GetTopLevelsResponse;
 import com.liwanag.gamification.model.UserComboStreak;
 import com.liwanag.gamification.model.UserDailyStreak;
 import com.liwanag.gamification.model.UserExperience;
+import com.liwanag.gamification.model.UserQuestionStats;
 import com.liwanag.gamification.repository.UserComboStreakRepository;
 import com.liwanag.gamification.repository.UserDailyStreakRepository;
 import com.liwanag.gamification.repository.UserExperienceRepository;
+import com.liwanag.gamification.repository.UserQuestionStatsRepository;
 import com.liwanag.gamification.service.experience.ExperienceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +32,7 @@ public class LeaderboardService {
     private final ExperienceService experienceService;
     private final UserComboStreakRepository comboStreakRepository;
     private final UserDailyStreakRepository dailyStreakRepository;
+    private final UserQuestionStatsRepository questionStatsRepository;
 
     private final RedisClient redisClient;
 
@@ -57,6 +61,16 @@ public class LeaderboardService {
         List<GetTopDailyStreaksResponse> response = new ArrayList<>();
         for (UserDailyStreak item : topDailyStreaks) {
             response.add(new GetTopDailyStreaksResponse(item.getUserId(), item.getMaxStreak()));
+        }
+
+        return response;
+    }
+
+    public List<GetTopCorrectResponse> getTopCorrect(Integer count, Integer page) {
+        List<UserQuestionStats> topQuestionStats = questionStatsRepository.findTopUsersByCorrect(PageRequest.of(page, count));
+        List<GetTopCorrectResponse> response = new ArrayList<>();
+        for (UserQuestionStats item : topQuestionStats) {
+            response.add(new GetTopCorrectResponse(item.getUserId(), item.getCorrectCount()));
         }
 
         return response;

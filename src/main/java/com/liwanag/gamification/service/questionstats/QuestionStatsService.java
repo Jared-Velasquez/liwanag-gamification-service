@@ -22,7 +22,7 @@ public class QuestionStatsService {
     private final RedisClient redisClient;
 
     @Transactional
-    private void recordAnswer(AnswerEvaluatedEvent event) {
+    public void recordAnswer(AnswerEvaluatedEvent event) {
         UUID userId = event.getUserId();
         UserQuestionStats updated = repository.findById(userId).map(stat -> {
             stat.setAttemptedCount(stat.getAttemptedCount() + 1);
