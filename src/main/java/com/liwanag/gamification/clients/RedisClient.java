@@ -17,10 +17,9 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.function.ToDoubleFunction;
 
 @Component
 @Slf4j
@@ -53,15 +52,6 @@ public class RedisClient {
                 .get();
     }
 
-    private void withCircuitBreakerNoWork(Runnable run, Runnable fallback) {
-        try {
-            CircuitBreaker.decorateRunnable(getCircuitBreaker(), run).run();
-        } catch (Exception e) {
-            log.warn("Redis Circuit Breaker triggered: {}", e.toString());
-            fallback.run();
-        }
-    }
-
     public Optional<String> vGet(String key) {
         return withCircuitBreaker(
                 () -> Optional.ofNullable((String) strRedisTemplate.opsForValue().get(key)),
@@ -79,7 +69,7 @@ public class RedisClient {
         );
     }
 
-    public <T> Optional<T> hGet(String key, Class<T> type) {
+    public <T> Optional<T> objGet(String key, Class<T> type) {
         return withCircuitBreaker(() -> {
                 Object value = redisTemplate.opsForValue().get(key);
                 if (!type.isInstance(value)) {
@@ -93,33 +83,7 @@ public class RedisClient {
         );
     }
 
-//    public <T> List<T> hGetBulk(List<String> keys, Class<T> type) {
-//        return withCircuitBreaker(() -> {
-//                // Fetch the list of objects from Redis
-//                List<Object> results = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-//                    StringRedisConnection strConnection = (StringRedisConnection) connection;
-//                    keys.forEach(strConnection::get);
-//                    return null;
-//                });
-//
-//                // Then convert each of the results into type T
-//                List<T> typedResults = new ArrayList<>(results.size());
-//                for (Object obj : results) {
-//                    if (obj != null && type.isInstance(obj)) {
-//                        typedResults.add(type.cast(obj));
-//                    } else {
-//                        log.warn("Unexpected type from Redis. Expected {}, got {}", type, obj != null ? obj.getClass() : "null");
-//                        throw new SerializationException("Error deserializing Redis data");
-//                    }
-//                }
-//
-//                return typedResults;
-//            },
-//            List::of
-//        );
-//    }
-
-    public <T> List<T> hGetBulk(List<String> keys, Class<T> type) {
+    public <T> List<T> objGetBulk(List<String> keys, Class<T> type) {
         return withCircuitBreaker(() -> {
                 List<Object> raw = redisTemplate.executePipelined(new SessionCallback<Object>() {
                     @Override
@@ -149,7 +113,7 @@ public class RedisClient {
         );
     }
 
-    public <T> void hSet(String key, T value, Long ttl) {
+    public <T> void objSet(String key, T value, Long ttl) {
         withCircuitBreaker(() -> {
                     redisTemplate.opsForValue().set(key, value, Duration.ofSeconds(ttl));
                     return null;
@@ -158,7 +122,7 @@ public class RedisClient {
         );
     }
 
-    public <T> void hSetBulk(List<KeyObjectPair<T>> pairs, Long ttl) {
+    public <T> void objSetBulk(List<KeyObjectPair<T>> pairs, Long ttl) {
         withCircuitBreaker(
                 () -> redisTemplate.executePipelined(new SessionCallback<Void>() {
                     @Override
@@ -172,6 +136,21 @@ public class RedisClient {
                 }),
                 () -> null
         );
+    }
+
+    public <T> long zaddList(String key, List<T> items, ToDoubleFunction<T> scoreFn, Duration ttl) {
+        ZSetOperations<String, Object> zops = redisTemplate.opsForZSet();
+
+        Set<ZSetOperations.TypedTuple<Object>> tuples = new LinkedHashSet<>(items.size());
+        for (T item : items) {
+            tuples.add(new DefaultTypedTuple<>(item, scoreFn.applyAsDouble(item)));
+        }
+
+        Long added = zops.add(key, tuples);
+        if (ttl != null && !ttl.isZero() && !ttl.isNegative())
+            redisTemplate.expire(key, ttl);
+
+        return added == null ? 0L : added;
     }
 
     public void invalidateKey(String key) {

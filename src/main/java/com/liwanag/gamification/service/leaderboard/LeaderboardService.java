@@ -1,23 +1,23 @@
 package com.liwanag.gamification.service.leaderboard;
 
 import com.liwanag.gamification.clients.RedisClient;
+import com.liwanag.gamification.dto.leaderboard.GetTopComboStreaksResponse;
+import com.liwanag.gamification.dto.leaderboard.GetTopDailyStreaksResponse;
 import com.liwanag.gamification.dto.leaderboard.GetTopLevelsResponse;
 import com.liwanag.gamification.model.UserComboStreak;
+import com.liwanag.gamification.model.UserDailyStreak;
 import com.liwanag.gamification.model.UserExperience;
+import com.liwanag.gamification.repository.UserComboStreakRepository;
+import com.liwanag.gamification.repository.UserDailyStreakRepository;
 import com.liwanag.gamification.repository.UserExperienceRepository;
 import com.liwanag.gamification.service.experience.ExperienceService;
-import com.liwanag.gamification.utils.KeyObjectPair;
-import com.liwanag.gamification.utils.TimeConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,47 +25,41 @@ import java.util.UUID;
 
 // Leaderboard service implementation adapted from: https://systemdesign.one/leaderboard-system-design/
 public class LeaderboardService {
-    private final UserExperienceRepository userExperienceRepository;
+    private final UserExperienceRepository experienceRepository;
     private final ExperienceService experienceService;
+    private final UserComboStreakRepository comboStreakRepository;
+    private final UserDailyStreakRepository dailyStreakRepository;
+
     private final RedisClient redisClient;
 
     public List<GetTopLevelsResponse> getTopLevels(Integer count, Integer page) {
-        // Logic to fetch top levels
-
-        List<UserExperience> topLevels = userExperienceRepository.findTopUsersByExperience(PageRequest.of(page, count));
+        List<UserExperience> topLevels = experienceRepository.findTopUsersByExperience(PageRequest.of(page, count));
         List<GetTopLevelsResponse> response = new ArrayList<>();
-        for (UserExperience e : topLevels) {
-            response.add(new GetTopLevelsResponse(e.getUserId(), experienceService.calculateLevelFromExperience(e.getExperience())));
+        for (UserExperience item : topLevels) {
+            response.add(new GetTopLevelsResponse(item.getUserId(), experienceService.calculateLevelFromExperience(item.getExperience())));
         }
 
         return response;
     }
 
-    // Example method to get top streaks
-    public void getTopStreaks(int count) {
-        log.info("Fetching top {} streaks", count);
-        List<KeyObjectPair<UserComboStreak>> comboStreaks = new ArrayList<>();
-        comboStreaks.add(new KeyObjectPair<>("jared1", new UserComboStreak(UUID.randomUUID(), 0, 0)));
-        comboStreaks.add(new KeyObjectPair<>("jared2", new UserComboStreak(UUID.randomUUID(), 2, 3)));
-        comboStreaks.add(new KeyObjectPair<>("jared3", new UserComboStreak(UUID.randomUUID(), 5, 5)));
-        comboStreaks.add(new KeyObjectPair<>("jared4", new UserComboStreak(UUID.randomUUID(), 2, 4)));
-
-        redisClient.hSetBulk(comboStreaks, TimeConstants.TEN_MINUTES);
-
-        List<String> keys = new ArrayList<>();
-        keys.add("jared1");
-        keys.add("jared2");
-        keys.add("jared3");
-        keys.add("jared4");
-
-        List<UserComboStreak> results = redisClient.hGetBulk(keys, UserComboStreak.class);
-
-        for (UserComboStreak result : results) {
-            if (result == null) {
-                continue;
-            }
-            log.info("Result: {} {} {} {}", result.getUserId(), result.getStreak(), result.getMaxStreak(), result.getUpdatedAt());
+    public List<GetTopComboStreaksResponse> getTopComboStreaks(Integer count, Integer page) {
+        List<UserComboStreak> topComboStreaks = comboStreakRepository.findTopUsersByMaxComboStreak(PageRequest.of(page, count));
+        List<GetTopComboStreaksResponse> response = new ArrayList<>();
+        for (UserComboStreak item : topComboStreaks) {
+            response.add(new GetTopComboStreaksResponse(item.getUserId(), item.getMaxStreak()));
         }
+
+        return response;
+    }
+
+    public List<GetTopDailyStreaksResponse> getTopDailyStreaks(Integer count, Integer page) {
+        List<UserDailyStreak> topDailyStreaks = dailyStreakRepository.findTopUsersByMaxDailyStreak(PageRequest.of(page, count));
+        List<GetTopDailyStreaksResponse> response = new ArrayList<>();
+        for (UserDailyStreak item : topDailyStreaks) {
+            response.add(new GetTopDailyStreaksResponse(item.getUserId(), item.getMaxStreak()));
+        }
+
+        return response;
     }
 
     // Example method to get top answered questions

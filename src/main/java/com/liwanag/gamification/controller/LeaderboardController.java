@@ -1,5 +1,7 @@
 package com.liwanag.gamification.controller;
 
+import com.liwanag.gamification.dto.leaderboard.GetTopComboStreaksResponse;
+import com.liwanag.gamification.dto.leaderboard.GetTopDailyStreaksResponse;
 import com.liwanag.gamification.dto.leaderboard.GetTopLevelsResponse;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
 import com.liwanag.gamification.utils.Validators;
@@ -32,23 +34,54 @@ public class LeaderboardController {
         return leaderboardService.getTopLevels(count, page);
     }
 
-    @GetMapping("/streaks/{count}")
+    @GetMapping("/combo")
     @ResponseStatus(HttpStatus.OK)
-    public void getTopStreaks(@PathVariable String count) {
-        Integer numUsers = Validators.convertToInteger(count);
-        if (numUsers == null || numUsers <= 0) {
-            throw new IllegalArgumentException("Count must be a valid positive integer.");
+    public List<GetTopComboStreaksResponse> getTopComboStreaks(
+            @RequestParam(value = "count", defaultValue = "5") Integer count,
+            @RequestParam(value = "page", defaultValue = "0") Integer page
+    ) {
+        if (count <= 0) {
+            throw new IllegalArgumentException("Count must be a positive integer.");
         }
-        leaderboardService.getTopStreaks(numUsers);
+
+        if (page < 0) {
+            throw new IllegalArgumentException("Page must be a non-negative integer.");
+        }
+
+        return leaderboardService.getTopComboStreaks(count, page);
     }
 
-    @GetMapping("/answered/{count}")
+    @GetMapping("/daily")
     @ResponseStatus(HttpStatus.OK)
-    public void getTopAnswered(@PathVariable String count) {
-        Integer numUsers = Validators.convertToInteger(count);
-        if (numUsers == null || numUsers <= 0) {
-            throw new IllegalArgumentException("Count must be a valid positive integer.");
+    public List<GetTopDailyStreaksResponse> getTopDailyStreaks(
+            @RequestParam(value = "count", defaultValue = "5") Integer count,
+            @RequestParam(value = "page", defaultValue = "0") Integer page
+    ) {
+        if (count <= 0) {
+            throw new IllegalArgumentException("Count must be a positive integer.");
         }
-        leaderboardService.getTopAnswered(numUsers);
+
+        if (page < 0) {
+            throw new IllegalArgumentException("Page must be a non-negative integer.");
+        }
+
+        return leaderboardService.getTopDailyStreaks(count, page);
     }
+
+//    @GetMapping("/answered")
+//    @ResponseStatus(HttpStatus.OK)
+//    public void getTopAnswered(
+//            @RequestParam(value = "count", defaultValue = "5") Integer count,
+//            @RequestParam(value = "page", defaultValue = "0") Integer page
+//    ) {
+//        if (count <= 0) {
+//            throw new IllegalArgumentException("Count must be a positive integer.");
+//        }
+//
+//        if (page < 0) {
+//            throw new IllegalArgumentException("Page must be a non-negative integer.");
+//        }
+//
+//        return leaderboardService.getTopAnswered(numUsers);
+//    }
 }
