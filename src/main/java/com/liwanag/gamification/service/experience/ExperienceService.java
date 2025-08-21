@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -30,10 +31,9 @@ public class ExperienceService {
         repository.findById(userId).ifPresentOrElse(
                 userExperience -> {
                     userExperience.setExperience(userExperience.getExperience() + deltaExperience);
-                    userExperience.setLastUpdated(Instant.now());
                     repository.save(userExperience);
                 },
-                () -> repository.save(new UserExperience(userId, deltaExperience, Instant.now()))
+                () -> repository.save(new UserExperience(userId, deltaExperience))
         );
 
         // Then invalidate Redis cache
@@ -54,7 +54,7 @@ public class ExperienceService {
 
         // Else query from database
         UserExperience data = repository.findById(userId).orElseGet(
-                () -> repository.save(new UserExperience(userId, 0, Instant.now()))
+                () -> repository.save(new UserExperience(userId, 0))
         );
 
         // Then hydrate Redis
@@ -77,7 +77,7 @@ public class ExperienceService {
 
         // Else query from database
         UserExperience data = repository.findById(userId).orElseGet(
-                () -> repository.save(new UserExperience(userId, 0, Instant.now()))
+                () -> repository.save(new UserExperience(userId, 0))
         );
 
         // Then hydrate Redis

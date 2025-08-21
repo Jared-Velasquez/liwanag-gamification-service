@@ -14,4 +14,12 @@ public class RedisKeys {
     public static String getExperienceKey(UUID userId) {
         return String.format("user:%s:experience", userId);
     }
+
+    public static String getQuestionStatsAttemptedKey(UUID userId) {
+        return String.format("user:%s:questionstats:attempted", userId);
+    }
+
+    public static String getQuestionStatsCorrectKey(UUID userId) {
+        return String.format("user:%s:questionstats:correct", userId);
+    }
 }

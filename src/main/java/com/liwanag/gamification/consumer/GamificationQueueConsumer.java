@@ -8,6 +8,7 @@ import com.liwanag.gamification.dto.event.Event;
 import com.liwanag.gamification.service.achievement.AchievementService;
 import com.liwanag.gamification.service.experience.ExperienceService;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
+import com.liwanag.gamification.service.questionstats.QuestionStatsService;
 import com.liwanag.gamification.service.streaks.ComboStreakService;
 import com.liwanag.gamification.service.streaks.DailyStreakService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
@@ -21,16 +22,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class GamificationQueueConsumer {
-    private final AchievementService achievementService;
-    private final LeaderboardService leaderboardService;
     private final ComboStreakService comboStreakService;
     private final DailyStreakService dailyStreakService;
+    private final QuestionStatsService questionStatsService;
     private final ExperienceService experienceService;
 
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        Event<AnswerEvaluatedEvent> envelope = mapper.readValue(message, new TypeReference<Event<AnswerEvaluatedEvent>>() {});
+        Event<AnswerEvaluatedEvent> envelope = mapper.readValue(message, new TypeReference<>() {});
         AnswerEvaluatedEvent event = envelope.getDetail();
         System.out.println("Received from SQS:");
         System.out.println(event.getQuestionId());
@@ -42,10 +42,11 @@ public class GamificationQueueConsumer {
 
         // Process the message and call the appropriate service methods
         // achievementService.processMessage(message);
-        // leaderboardService.updateLeaderboard(message);
         // streakService.updateStreak(message);
         comboStreakService.updateComboStreak(event);
         dailyStreakService.updateUserDailyStreak(userId);
+        questionStatsService.recordAnswer(event);
+
 
         // Handle experience points
         if (event.getXpGained() != null) {
