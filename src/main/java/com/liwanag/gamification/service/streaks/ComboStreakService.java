@@ -32,7 +32,7 @@ public class ComboStreakService {
             streak.setStreak(incremented);
             streak.setMaxStreak(Math.max(streak.getMaxStreak(), incremented));
             return repository.save(streak);
-        }).orElseGet(() -> repository.save(new UserComboStreak(userId, 1, 1, new Date())));
+        }).orElseGet(() -> repository.save(new UserComboStreak(userId, 1, 1)));
 
         // Then update combo streak in Redis
         String streakKey = RedisKeys.getComboStreakKey(userId);
@@ -47,7 +47,7 @@ public class ComboStreakService {
         UserComboStreak updated = repository.findById(userId).map(streak -> {
             streak.setStreak(0);
             return repository.save(streak);
-        }).orElseGet(() -> repository.save(new UserComboStreak(userId, 0, 0, new Date())));
+        }).orElseGet(() -> repository.save(new UserComboStreak(userId, 0, 0)));
 
         // Then update combo streak in Redis
         String key = RedisKeys.getComboStreakKey(userId);
@@ -85,7 +85,7 @@ public class ComboStreakService {
 
         // Else query from database
         UserComboStreak data = repository.findById(userId).orElseGet(
-                () -> repository.save(new UserComboStreak(userId, 0, 0, new Date()))
+                () -> repository.save(new UserComboStreak(userId, 0, 0))
         );
 
         // Then hydrate Redis

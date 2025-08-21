@@ -31,10 +31,9 @@ public class ExperienceService {
         repository.findById(userId).ifPresentOrElse(
                 userExperience -> {
                     userExperience.setExperience(userExperience.getExperience() + deltaExperience);
-                    userExperience.setLastUpdated(new Date());
                     repository.save(userExperience);
                 },
-                () -> repository.save(new UserExperience(userId, deltaExperience, new Date()))
+                () -> repository.save(new UserExperience(userId, deltaExperience))
         );
 
         // Then invalidate Redis cache
@@ -55,7 +54,7 @@ public class ExperienceService {
 
         // Else query from database
         UserExperience data = repository.findById(userId).orElseGet(
-                () -> repository.save(new UserExperience(userId, 0, new Date()))
+                () -> repository.save(new UserExperience(userId, 0))
         );
 
         // Then hydrate Redis
@@ -78,7 +77,7 @@ public class ExperienceService {
 
         // Else query from database
         UserExperience data = repository.findById(userId).orElseGet(
-                () -> repository.save(new UserExperience(userId, 0, new Date()))
+                () -> repository.save(new UserExperience(userId, 0))
         );
 
         // Then hydrate Redis

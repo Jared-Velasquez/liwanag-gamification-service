@@ -30,7 +30,7 @@ public class GamificationQueueConsumer {
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        Event<AnswerEvaluatedEvent> envelope = mapper.readValue(message, new TypeReference<Event<AnswerEvaluatedEvent>>() {});
+        Event<AnswerEvaluatedEvent> envelope = mapper.readValue(message, new TypeReference<>() {});
         AnswerEvaluatedEvent event = envelope.getDetail();
         System.out.println("Received from SQS:");
         System.out.println(event.getQuestionId());

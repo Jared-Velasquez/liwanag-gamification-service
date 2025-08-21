@@ -3,12 +3,15 @@ package com.liwanag.gamification.service.streaks;
 import com.liwanag.gamification.dto.streaks.GetDailyStreaksResponse;
 import com.liwanag.gamification.model.UserDailyStreak;
 import com.liwanag.gamification.repository.UserDailyStreakRepository;
+import com.liwanag.gamification.utils.TimeConstants;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -21,22 +24,21 @@ public class DailyStreakService {
     // TODO: don't update on every request, but on specific events
     public void updateUserDailyStreak(UUID userId) {
         UserDailyStreak streak = repository.findById(userId)
-                .orElse(new UserDailyStreak(userId, 0, 0, null));
+                .orElseGet(() -> repository.save(new UserDailyStreak(userId, 0, 0)));
 
-        Date today = new Date();
-        Date lastActiveDate = streak.getLastActiveDate();
+        LocalDateTime lastActiveDate = LocalDateTime.ofInstant(streak.getUpdatedAt(), TimeConstants.ZONE_ID);
+        LocalDateTime today = LocalDateTime.now(TimeConstants.ZONE_ID);
 
-//        if (lastActiveDate == null || lastActiveDate.isBefore(today.minusDays(1))) {
-//            log.info("User {} is starting a new streak", userId);
-//            streak.setStreak(1);
-//        } else if (lastActiveDate.isEqual(today.minusDays(1))) {
-//            log.info("User {} is continuing their streak; streak of day {}", userId, streak.getStreak() + 1);
-//            streak.setStreak(streak.getStreak() + 1);
-//        } else {
-//            streak.setStreak(1);
-//        }
+        if (lastActiveDate.isBefore(today.minusDays(1))) {
+            log.info("User {} is starting a new streak", userId);
+            streak.setStreak(1);
+        } else if (lastActiveDate.isEqual(today.minusDays(1))) {
+            log.info("User {} is continuing their streak; streak of day {}", userId, streak.getStreak() + 1);
+            streak.setStreak(streak.getStreak() + 1);
+        } else {
+            streak.setStreak(1);
+        }
 
-        streak.setLastActiveDate(today);
         streak.setMaxStreak(Math.max(streak.getMaxStreak(), streak.getStreak()));
         repository.save(streak);
     }
@@ -51,15 +53,14 @@ public class DailyStreakService {
         UserDailyStreak userDailyStreak = repository.findById(userId).orElse(null);
 
         if (userDailyStreak != null) {
-            Date lastActiveDate = userDailyStreak.getLastActiveDate();
-            Date today = new Date();
+            LocalDateTime lastActiveDate = LocalDateTime.ofInstant(userDailyStreak.getUpdatedAt(), TimeConstants.ZONE_ID);
+            LocalDateTime today = LocalDateTime.now(TimeConstants.ZONE_ID);
 
-//            if (lastActiveDate == null || !lastActiveDate.isEqual(today) && !lastActiveDate.isEqual(today.minusDays(1))) {
-//                log.info("Resetting streak for user {} due to inactivity", userId);
-//                userDailyStreak.setStreak(0);
-//                userDailyStreak.setLastActiveDate(today);
-//                repository.save(userDailyStreak);
-//            }
+            if (!lastActiveDate.isEqual(today) && !lastActiveDate.isEqual(today.minusDays(1))) {
+                log.info("Resetting streak for user {} due to inactivity", userId);
+                userDailyStreak.setStreak(0);
+                repository.save(userDailyStreak);
+            }
 
             return new GetDailyStreaksResponse(userDailyStreak.getStreak(), userDailyStreak.getMaxStreak());
         }

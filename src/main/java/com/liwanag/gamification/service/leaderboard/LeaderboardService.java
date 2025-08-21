@@ -45,10 +45,10 @@ public class LeaderboardService {
     public void getTopStreaks(int count) {
         log.info("Fetching top {} streaks", count);
         List<KeyObjectPair<UserComboStreak>> comboStreaks = new ArrayList<>();
-        comboStreaks.add(new KeyObjectPair<>("jared1", new UserComboStreak(UUID.randomUUID(), 0, 0, new Date())));
-        comboStreaks.add(new KeyObjectPair<>("jared2", new UserComboStreak(UUID.randomUUID(), 2, 3, new Date())));
-        comboStreaks.add(new KeyObjectPair<>("jared3", new UserComboStreak(UUID.randomUUID(), 5, 5, new Date())));
-        comboStreaks.add(new KeyObjectPair<>("jared4", new UserComboStreak(UUID.randomUUID(), 2, 4, new Date())));
+        comboStreaks.add(new KeyObjectPair<>("jared1", new UserComboStreak(UUID.randomUUID(), 0, 0)));
+        comboStreaks.add(new KeyObjectPair<>("jared2", new UserComboStreak(UUID.randomUUID(), 2, 3)));
+        comboStreaks.add(new KeyObjectPair<>("jared3", new UserComboStreak(UUID.randomUUID(), 5, 5)));
+        comboStreaks.add(new KeyObjectPair<>("jared4", new UserComboStreak(UUID.randomUUID(), 2, 4)));
 
         redisClient.hSetBulk(comboStreaks, TimeConstants.TEN_MINUTES);
 
@@ -64,7 +64,7 @@ public class LeaderboardService {
             if (result == null) {
                 continue;
             }
-            log.info("Result: {} {} {} {}", result.getUserId(), result.getStreak(), result.getMaxStreak(), result.getLastActiveDate());
+            log.info("Result: {} {} {} {}", result.getUserId(), result.getStreak(), result.getMaxStreak(), result.getUpdatedAt());
         }
     }
 

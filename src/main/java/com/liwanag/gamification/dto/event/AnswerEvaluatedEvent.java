@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -25,7 +25,7 @@ public class AnswerEvaluatedEvent {
     private String unitId;
     private String result;
     private Integer xpGained;
-    private Date timestamp;
+    private Instant timestamp;
 
     public Result getEnumResult() {
         return Result.valueOf(this.result.toUpperCase());
