@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @RequiredArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Event<T> {
+public class Event {
     private String version;
     private String id;
 
@@ -25,5 +25,5 @@ public class Event<T> {
     private String time;
     private String region;
     private List<String> resources;
-    private T detail;
+    private LiwanagEvent detail;
 }

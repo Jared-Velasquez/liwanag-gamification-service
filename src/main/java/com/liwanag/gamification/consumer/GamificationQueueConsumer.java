@@ -3,8 +3,7 @@ package com.liwanag.gamification.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.liwanag.gamification.dto.event.AnswerEvaluatedEvent;
-import com.liwanag.gamification.dto.event.Event;
+import com.liwanag.gamification.dto.event.*;
 import com.liwanag.gamification.service.achievement.AchievementService;
 import com.liwanag.gamification.service.experience.ExperienceService;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
@@ -30,15 +29,24 @@ public class GamificationQueueConsumer {
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        Event<AnswerEvaluatedEvent> envelope = mapper.readValue(message, new TypeReference<>() {});
-        AnswerEvaluatedEvent event = envelope.getDetail();
-        System.out.println("Received from SQS:");
-        System.out.println(event.getQuestionId());
-        System.out.println(event.getResult());
-        System.out.println(event.getUserId());
+        Event envelope = mapper.readValue(message, new TypeReference<>() {});
+        LiwanagEvent event = envelope.getDetail();
 
+
+        switch (event.getEnumEventType()) {
+            case ANSWER_EVALUATED -> handleAnswerEvaluated((AnswerEvaluatedEvent) event);
+            case ACTIVITY_COMPLETED -> handleActivityCompleted((ActivityCompletedEvent) event);
+            case EPISODE_COMPLETED -> handleEpisodeCompleted((EpisodeCompletedEvent) event);
+            case UNIT_COMPLETED -> handleUnitCompleted((UnitCompletedEvent) event);
+            default -> {
+                log.warn("Received unknown event type: {}", event.getEnumEventType());
+                return;
+            }
+        }
+    }
+
+    public void handleAnswerEvaluated(AnswerEvaluatedEvent event) {
         UUID userId = event.getUserId();
-
 
         // Process the message and call the appropriate service methods
         // achievementService.processMessage(message);
@@ -61,5 +69,17 @@ public class GamificationQueueConsumer {
                 log.info("User has leveled up from {} to {}", baseLevel, newLevel);
             }
         }
+    }
+
+    public void handleActivityCompleted(ActivityCompletedEvent event) {
+
+    }
+
+    public void handleEpisodeCompleted(EpisodeCompletedEvent event) {
+
+    }
+
+    public void handleUnitCompleted(UnitCompletedEvent event) {
+
     }
 }
