@@ -1,0 +1,67 @@
+achievements:
+  - code: "level_2"
+    name: "First Steps"
+    description: "Level up to level 2"
+    criteria:
+      level: 2
+    rewards:
+      experience: 50
+  - code: "level_5"
+    name: "TODO"
+    description: "Level up to level 5"
+    criteria:
+      level: 5
+    rewards:
+      experience: 100
+  - code: "level_10"
+    name: "TODO"
+    description: "Level up to level 10"
+    criteria:
+      level: 10
+    rewards:
+      experience: 150
+
+  - code: "unit_1"
+    name: "TODO"
+    description: "Complete Unit 1"
+    criteria:
+      unit: 1
+    rewards:
+      experience: 250
+  - code: "unit_2"
+    name: "TODO"
+    description: "Complete Unit 2"
+    criteria:
+      unit: 2
+    rewards:
+      experience: 300
+  - code: "unit_3"
+    name: "TODO"
+    description: "Complete Unit 3"
+    criteria:
+      unit: 3
+    rewards:
+      experience: 350
+  - code: "unit_4"
+    name: "TODO"
+    description: "Complete Unit 4"
+    criteria:
+      unit: 4
+    rewards:
+      experience: 400
+  - code: "unit_5"
+    name: "TODO"
+    description: "Complete Unit 5"
+    criteria:
+      unit: 5
+    rewards:
+      experience: 450
+
+  - code: "retention_master"
+    name: "Retention Master"
+    description: "Revisit previous activities at least 5 times"
+    criteria:
+      revisit_count: 5
+    properties:
+      repeatable: 5
+

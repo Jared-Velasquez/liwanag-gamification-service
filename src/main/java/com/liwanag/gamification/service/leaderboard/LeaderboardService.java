@@ -8,11 +8,11 @@ import com.liwanag.gamification.dto.leaderboard.GetTopLevelsResponse;
 import com.liwanag.gamification.model.UserComboStreak;
 import com.liwanag.gamification.model.UserDailyStreak;
 import com.liwanag.gamification.model.UserExperience;
-import com.liwanag.gamification.model.UserQuestionStats;
+import com.liwanag.gamification.model.UserStats;
 import com.liwanag.gamification.repository.UserComboStreakRepository;
 import com.liwanag.gamification.repository.UserDailyStreakRepository;
 import com.liwanag.gamification.repository.UserExperienceRepository;
-import com.liwanag.gamification.repository.UserQuestionStatsRepository;
+import com.liwanag.gamification.repository.UserStatsRepository;
 import com.liwanag.gamification.service.experience.ExperienceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class LeaderboardService {
     private final ExperienceService experienceService;
     private final UserComboStreakRepository comboStreakRepository;
     private final UserDailyStreakRepository dailyStreakRepository;
-    private final UserQuestionStatsRepository questionStatsRepository;
+    private final UserStatsRepository statsRepository;
 
     private final RedisClient redisClient;
 
@@ -67,9 +67,9 @@ public class LeaderboardService {
     }
 
     public List<GetTopCorrectResponse> getTopCorrect(Integer count, Integer page) {
-        List<UserQuestionStats> topQuestionStats = questionStatsRepository.findTopUsersByCorrect(PageRequest.of(page, count));
+        List<UserStats> topQuestionStats = statsRepository.findTopUsersByCorrect(PageRequest.of(page, count));
         List<GetTopCorrectResponse> response = new ArrayList<>();
-        for (UserQuestionStats item : topQuestionStats) {
+        for (UserStats item : topQuestionStats) {
             response.add(new GetTopCorrectResponse(item.getUserId(), item.getCorrectCount()));
         }
 

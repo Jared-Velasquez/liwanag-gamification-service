@@ -1,6 +1,5 @@
 package com.liwanag.gamification.model;
 
-import com.liwanag.gamification.dto.event.AnswerEvaluatedEvent;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Setter
 @RequiredArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserQuestionStats {
+public class UserStats {
     @Id
     @NonNull
     private UUID userId;
