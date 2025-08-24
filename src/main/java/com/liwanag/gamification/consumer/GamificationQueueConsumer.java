@@ -11,11 +11,13 @@ import com.liwanag.gamification.service.leaderboard.LeaderboardService;
 import com.liwanag.gamification.service.questionstats.QuestionStatsService;
 import com.liwanag.gamification.service.streaks.ComboStreakService;
 import com.liwanag.gamification.service.streaks.DailyStreakService;
+import com.liwanag.gamification.dto.event.LiwanagEvent.EventType;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -29,41 +31,52 @@ public class GamificationQueueConsumer {
 
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
-        if (!hasEventType(message))
+        EventType eventType = extractEventType(message).orElse(null);
+
+        if (eventType == null)
             return;
 
         ObjectMapper mapper = new ObjectMapper();
-        Event envelope = mapper.readValue(message, new TypeReference<>() {});
-        LiwanagEvent event = envelope.getDetail();
+        JsonNode root = mapper.readTree(message);
+        JsonNode detailNode = root.path("detail");
 
-
-        switch (event.getEnumEventType()) {
-            case ANSWER_EVALUATED -> handleAnswerEvaluated((AnswerEvaluatedEvent) event);
-            case ACTIVITY_COMPLETED -> handleActivityCompleted((ActivityCompletedEvent) event);
-            case EPISODE_COMPLETED -> handleEpisodeCompleted((EpisodeCompletedEvent) event);
-            case UNIT_COMPLETED -> handleUnitCompleted((UnitCompletedEvent) event);
-            default -> {
-                log.warn("Received unknown event type: {}", event.getEnumEventType());
-                return;
+        switch (eventType) {
+            case EventType.AnswerEvaluated -> {
+                AnswerEvaluatedEvent event = mapper.treeToValue(detailNode, AnswerEvaluatedEvent.class);
+                handleAnswerEvaluated(event);
             }
+            case EventType.ActivityCompleted -> {
+                ActivityCompletedEvent event = mapper.treeToValue(detailNode, ActivityCompletedEvent.class);
+                handleActivityCompleted(event);
+            }
+            case EventType.EpisodeCompleted -> {
+                EpisodeCompletedEvent event = mapper.treeToValue(detailNode, EpisodeCompletedEvent.class);
+                handleEpisodeCompleted(event);
+            }
+            case EventType.UnitCompleted -> {
+                UnitCompletedEvent event = mapper.treeToValue(detailNode, UnitCompletedEvent.class);
+                handleUnitCompleted(event);
+            }
+            default -> log.warn("Unknown eventType: {}", eventType);
         }
     }
 
-    private boolean hasEventType(String message) {
+    private Optional<EventType> extractEventType(String message) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(message);
+            String detailType = root.path("detail-type").asText(null);
+            JsonNode detailNode = root.path("detail");
 
-            JsonNode eventTypeNode = root.get("eventType");
-            if (eventTypeNode == null || eventTypeNode.isNull()) {
-                log.warn("Missing eventType in message: {}", message);
-                return false;
+            if (detailType == null || detailNode.isMissingNode()) {
+                log.warn("Received event without detailType or detail: {}", message);
+                return Optional.empty();
             }
 
-            return true;
+            return Optional.ofNullable(LiwanagEvent.getEnumEventType(detailType));
         } catch (Exception e) {
-            log.error("Failed to process SQS message: {}", message, e);
-            return false;
+            log.error("Exception occurred when processing message {}", message, e);
+            return Optional.empty();
         }
     }
 
