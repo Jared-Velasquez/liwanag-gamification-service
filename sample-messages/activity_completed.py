@@ -1,0 +1,30 @@
+import boto3
+import json
+
+# EventBridge client
+EVENT_BUS_NAME = "LiwanagEventBus"
+eventbridge = boto3.client("events", region_name="us-west-1")
+
+source = "progress.tracker"
+detail_type = "ActivityCompleted"
+
+payload = {
+    "userId": "e35e4184-f05c-4736-a902-8e0f1479563f",
+    "activityId": "a",
+    "episodeId": "b",
+    "unitId": "c",
+    "timestamp": "2025-08-23T12:34:56.789Z"
+}
+
+event_entry = {
+    "Source": source,
+    "DetailType": detail_type,
+    "Detail": json.dumps(payload),
+    "EventBusName": EVENT_BUS_NAME
+}
+
+# Send the event to EventBridge
+response = eventbridge.put_events(Entries=[event_entry])
+
+print("Event sent:")
+print(response)

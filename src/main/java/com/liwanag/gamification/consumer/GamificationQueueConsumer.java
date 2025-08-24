@@ -28,6 +28,7 @@ public class GamificationQueueConsumer {
     private final DailyStreakService dailyStreakService;
     private final QuestionStatsService questionStatsService;
     private final ExperienceService experienceService;
+    private final ObjectMapper objectMapper;
 
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
@@ -36,25 +37,24 @@ public class GamificationQueueConsumer {
         if (eventType == null)
             return;
 
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(message);
+        JsonNode root = objectMapper.readTree(message);
         JsonNode detailNode = root.path("detail");
 
         switch (eventType) {
             case EventType.AnswerEvaluated -> {
-                AnswerEvaluatedEvent event = mapper.treeToValue(detailNode, AnswerEvaluatedEvent.class);
+                AnswerEvaluatedEvent event = objectMapper.treeToValue(detailNode, AnswerEvaluatedEvent.class);
                 handleAnswerEvaluated(event);
             }
             case EventType.ActivityCompleted -> {
-                ActivityCompletedEvent event = mapper.treeToValue(detailNode, ActivityCompletedEvent.class);
+                ActivityCompletedEvent event = objectMapper.treeToValue(detailNode, ActivityCompletedEvent.class);
                 handleActivityCompleted(event);
             }
             case EventType.EpisodeCompleted -> {
-                EpisodeCompletedEvent event = mapper.treeToValue(detailNode, EpisodeCompletedEvent.class);
+                EpisodeCompletedEvent event = objectMapper.treeToValue(detailNode, EpisodeCompletedEvent.class);
                 handleEpisodeCompleted(event);
             }
             case EventType.UnitCompleted -> {
-                UnitCompletedEvent event = mapper.treeToValue(detailNode, UnitCompletedEvent.class);
+                UnitCompletedEvent event = objectMapper.treeToValue(detailNode, UnitCompletedEvent.class);
                 handleUnitCompleted(event);
             }
             default -> log.warn("Unknown eventType: {}", eventType);
@@ -63,8 +63,7 @@ public class GamificationQueueConsumer {
 
     private Optional<EventType> extractEventType(String message) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(message);
+            JsonNode root = objectMapper.readTree(message);
             String detailType = root.path("detail-type").asText(null);
             JsonNode detailNode = root.path("detail");
 
@@ -81,6 +80,8 @@ public class GamificationQueueConsumer {
     }
 
     public void handleAnswerEvaluated(AnswerEvaluatedEvent event) {
+        log.info("Handling AnswerEvaluated event");
+
         UUID userId = event.getUserId();
 
         // Process the message and call the appropriate service methods
@@ -107,14 +108,14 @@ public class GamificationQueueConsumer {
     }
 
     public void handleActivityCompleted(ActivityCompletedEvent event) {
-
+        log.info("Handling ActivityCompleted event");
     }
 
     public void handleEpisodeCompleted(EpisodeCompletedEvent event) {
-
+        log.info("Handling EpisodeCompleted event");
     }
 
     public void handleUnitCompleted(UnitCompletedEvent event) {
-
+        log.info("Handling UnitCompleted event");
     }
 }
