@@ -9,6 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserStatsRepository extends JpaRepository<UserStats, UUID> {
-    @Query("SELECT x FROM UserQuestionStats x ORDER BY x.correctCount DESC")
+    @Query("SELECT x FROM UserStats x ORDER BY x.correctCount DESC")
     List<UserStats> findTopUsersByCorrect(Pageable pageable);
 }

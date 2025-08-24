@@ -2,6 +2,7 @@ package com.liwanag.gamification.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liwanag.gamification.dto.event.*;
 import com.liwanag.gamification.service.achievement.AchievementService;
@@ -28,6 +29,9 @@ public class GamificationQueueConsumer {
 
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
+        if (!hasEventType(message))
+            return;
+
         ObjectMapper mapper = new ObjectMapper();
         Event envelope = mapper.readValue(message, new TypeReference<>() {});
         LiwanagEvent event = envelope.getDetail();
@@ -42,6 +46,24 @@ public class GamificationQueueConsumer {
                 log.warn("Received unknown event type: {}", event.getEnumEventType());
                 return;
             }
+        }
+    }
+
+    private boolean hasEventType(String message) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(message);
+
+            JsonNode eventTypeNode = root.get("eventType");
+            if (eventTypeNode == null || eventTypeNode.isNull()) {
+                log.warn("Missing eventType in message: {}", message);
+                return false;
+            }
+
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to process SQS message: {}", message, e);
+            return false;
         }
     }
 
