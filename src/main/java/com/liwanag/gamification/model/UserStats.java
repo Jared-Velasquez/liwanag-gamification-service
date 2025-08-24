@@ -24,6 +24,12 @@ public class UserStats {
     private Integer attemptedCount;
     @NonNull
     private Integer correctCount;
+    @NonNull
+    private Integer activityCompletedCount;
+    @NonNull
+    private Integer episodeCompletedCount;
+    @NonNull
+    private Integer maxUnitCompleted;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
