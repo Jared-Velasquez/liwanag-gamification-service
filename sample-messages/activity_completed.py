@@ -13,6 +13,7 @@ payload = {
     "activityId": "a",
     "episodeId": "b",
     "unitId": "c",
+    "isFirstCompletion": True,
     "timestamp": "2025-08-23T12:34:56.789Z"
 }
 

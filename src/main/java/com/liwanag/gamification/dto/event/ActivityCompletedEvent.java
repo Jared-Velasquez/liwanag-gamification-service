@@ -19,5 +19,6 @@ public class ActivityCompletedEvent {
     private String activityId;
     private String episodeId;
     private String unitId;
+    private Boolean isFirstCompletion;
     private Instant timestamp;
 }

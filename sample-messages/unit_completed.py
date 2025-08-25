@@ -11,6 +11,7 @@ detail_type = "UnitCompleted"
 payload = {
     "userId": "e35e4184-f05c-4736-a902-8e0f1479563f",
     "unitId": "c",
+    "isFirstCompletion": True,
     "timestamp": "2025-08-23T12:34:56.789Z"
 }
 

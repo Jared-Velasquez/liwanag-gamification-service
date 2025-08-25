@@ -18,5 +18,6 @@ public class EpisodeCompletedEvent {
     private UUID userId;
     private String episodeId;
     private String unitId;
+    private Boolean isFirstCompletion;
     private Instant timestamp;
 }

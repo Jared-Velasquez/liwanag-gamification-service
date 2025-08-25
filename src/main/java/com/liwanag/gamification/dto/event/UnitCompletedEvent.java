@@ -17,5 +17,6 @@ import java.util.UUID;
 public class UnitCompletedEvent {
     private UUID userId;
     private String unitId;
+    private Boolean isFirstCompletion;
     private Instant timestamp;
 }

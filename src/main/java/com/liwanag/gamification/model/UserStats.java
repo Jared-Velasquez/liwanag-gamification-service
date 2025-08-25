@@ -29,7 +29,7 @@ public class UserStats {
     @NonNull
     private Integer episodeCompletedCount;
     @NonNull
-    private Integer maxUnitCompleted;
+    private Integer unitCompletedCount;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
