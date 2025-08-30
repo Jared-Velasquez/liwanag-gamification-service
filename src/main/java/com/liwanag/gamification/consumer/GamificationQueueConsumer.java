@@ -42,19 +42,19 @@ public class GamificationQueueConsumer {
         JsonNode detailNode = root.path("detail");
 
         switch (eventType) {
-            case EventType.AnswerEvaluated -> {
+            case AnswerEvaluated -> {
                 AnswerEvaluatedEvent event = objectMapper.treeToValue(detailNode, AnswerEvaluatedEvent.class);
                 handleAnswerEvaluated(event);
             }
-            case EventType.ActivityCompleted -> {
+            case ActivityCompleted -> {
                 ActivityCompletedEvent event = objectMapper.treeToValue(detailNode, ActivityCompletedEvent.class);
                 handleActivityCompleted(event);
             }
-            case EventType.EpisodeCompleted -> {
+            case EpisodeCompleted -> {
                 EpisodeCompletedEvent event = objectMapper.treeToValue(detailNode, EpisodeCompletedEvent.class);
                 handleEpisodeCompleted(event);
             }
-            case EventType.UnitCompleted -> {
+            case UnitCompleted -> {
                 UnitCompletedEvent event = objectMapper.treeToValue(detailNode, UnitCompletedEvent.class);
                 handleUnitCompleted(event);
             }

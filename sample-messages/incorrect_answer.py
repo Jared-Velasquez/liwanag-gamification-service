@@ -3,7 +3,8 @@ import json
 
 # EventBridge client
 EVENT_BUS_NAME = "LiwanagEventBus"
-eventbridge = boto3.client("events", region_name="us-west-1")
+session = boto3.Session(profile_name="jared-liwanag")
+eventbridge = session.client("events")
 
 source = "scoring.service"
 detail_type = "AnswerEvaluated"
