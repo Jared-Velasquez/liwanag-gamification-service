@@ -1,7 +1,10 @@
 package com.liwanag.gamification.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -11,22 +14,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AnswerEvaluatedEvent {
-    public enum Result {
-        CORRECT,
-        INCORRECT
-    }
-
+public class ActivityCompletedEvent {
     private UUID userId;
-    private String questionId;
     private String activityId;
     private String episodeId;
     private String unitId;
-    private String result;
-    private Integer xpGained;
+    private Boolean isFirstCompletion;
     private Instant timestamp;
-
-    public Result getEnumResult() throws IllegalArgumentException {
-        return Result.valueOf(this.result.toUpperCase());
-    }
 }

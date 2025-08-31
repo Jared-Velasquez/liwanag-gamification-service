@@ -58,10 +58,10 @@ public class ComboStreakService {
     @Transactional
     public void updateComboStreak(AnswerEvaluatedEvent event) {
         switch (event.getEnumResult()) {
-            case Result.CORRECT:
+            case CORRECT:
                 incrementComboStreak(event.getUserId());
                 break;
-            case Result.INCORRECT:
+            case INCORRECT:
                 removeComboStreak(event.getUserId());
                 break;
             default:

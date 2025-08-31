@@ -2,20 +2,22 @@ package com.liwanag.gamification.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.liwanag.gamification.dto.event.AnswerEvaluatedEvent;
-import com.liwanag.gamification.dto.event.Event;
+import com.liwanag.gamification.dto.event.*;
 import com.liwanag.gamification.service.achievement.AchievementService;
 import com.liwanag.gamification.service.experience.ExperienceService;
 import com.liwanag.gamification.service.leaderboard.LeaderboardService;
 import com.liwanag.gamification.service.questionstats.QuestionStatsService;
 import com.liwanag.gamification.service.streaks.ComboStreakService;
 import com.liwanag.gamification.service.streaks.DailyStreakService;
+import com.liwanag.gamification.dto.event.LiwanagEvent.EventType;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,19 +28,63 @@ public class GamificationQueueConsumer {
     private final DailyStreakService dailyStreakService;
     private final QuestionStatsService questionStatsService;
     private final ExperienceService experienceService;
+    private final AchievementService achievementService;
+    private final QuestionStatsService statsService;
+    private final ObjectMapper objectMapper;
 
     @SqsListener(value = "GamificationQueue")
     public void listen(String message) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        Event<AnswerEvaluatedEvent> envelope = mapper.readValue(message, new TypeReference<>() {});
-        AnswerEvaluatedEvent event = envelope.getDetail();
-        System.out.println("Received from SQS:");
-        System.out.println(event.getQuestionId());
-        System.out.println(event.getResult());
-        System.out.println(event.getUserId());
+        EventType eventType = extractEventType(message).orElse(null);
+
+        if (eventType == null)
+            return;
+
+        JsonNode root = objectMapper.readTree(message);
+        JsonNode detailNode = root.path("detail");
+
+        switch (eventType) {
+            case AnswerEvaluated -> {
+                AnswerEvaluatedEvent event = objectMapper.treeToValue(detailNode, AnswerEvaluatedEvent.class);
+                handleAnswerEvaluated(event);
+            }
+            case ActivityCompleted -> {
+                ActivityCompletedEvent event = objectMapper.treeToValue(detailNode, ActivityCompletedEvent.class);
+                handleActivityCompleted(event);
+            }
+            case EpisodeCompleted -> {
+                EpisodeCompletedEvent event = objectMapper.treeToValue(detailNode, EpisodeCompletedEvent.class);
+                handleEpisodeCompleted(event);
+            }
+            case UnitCompleted -> {
+                UnitCompletedEvent event = objectMapper.treeToValue(detailNode, UnitCompletedEvent.class);
+                handleUnitCompleted(event);
+            }
+            default -> log.warn("Unknown eventType: {}", eventType);
+        }
+    }
+
+    private Optional<EventType> extractEventType(String message) {
+        try {
+            JsonNode root = objectMapper.readTree(message);
+            String detailType = root.path("detail-type").asText(null);
+            JsonNode detailNode = root.path("detail");
+
+            if (detailType == null || detailNode.isMissingNode()) {
+                log.warn("Received event without detailType or detail: {}", message);
+                return Optional.empty();
+            }
+
+            return Optional.ofNullable(LiwanagEvent.getEnumEventType(detailType));
+        } catch (Exception e) {
+            log.error("Exception occurred when processing message {}", message, e);
+            return Optional.empty();
+        }
+    }
+
+    public void handleAnswerEvaluated(AnswerEvaluatedEvent event) {
+        log.info("Handling AnswerEvaluated event");
 
         UUID userId = event.getUserId();
-
 
         // Process the message and call the appropriate service methods
         // achievementService.processMessage(message);
@@ -61,5 +107,29 @@ public class GamificationQueueConsumer {
                 log.info("User has leveled up from {} to {}", baseLevel, newLevel);
             }
         }
+    }
+
+    public void handleActivityCompleted(ActivityCompletedEvent event) {
+        log.info("Handling ActivityCompleted event");
+        UUID userId = event.getUserId();
+
+        statsService.updateActivityCompleted(event);
+        achievementService.checkAchievementsUnlocked(userId);
+    }
+
+    public void handleEpisodeCompleted(EpisodeCompletedEvent event) {
+        log.info("Handling EpisodeCompleted event");
+        UUID userId = event.getUserId();
+
+        statsService.updateEpisodeCompleted(event);
+        achievementService.checkAchievementsUnlocked(userId);
+    }
+
+    public void handleUnitCompleted(UnitCompletedEvent event) {
+        log.info("Handling UnitCompleted event");
+        UUID userId = event.getUserId();
+
+        statsService.updateUnitCompleted(event);
+        achievementService.checkAchievementsUnlocked(userId);
     }
 }

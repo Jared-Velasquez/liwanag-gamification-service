@@ -1,6 +1,5 @@
 package com.liwanag.gamification.model;
 
-import com.liwanag.gamification.dto.event.AnswerEvaluatedEvent;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Setter
 @RequiredArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserQuestionStats {
+public class UserStats {
     @Id
     @NonNull
     private UUID userId;
@@ -25,6 +24,12 @@ public class UserQuestionStats {
     private Integer attemptedCount;
     @NonNull
     private Integer correctCount;
+    @NonNull
+    private Integer activityCompletedCount;
+    @NonNull
+    private Integer episodeCompletedCount;
+    @NonNull
+    private Integer unitCompletedCount;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)

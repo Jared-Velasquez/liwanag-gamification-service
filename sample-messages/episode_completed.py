@@ -6,17 +6,17 @@ EVENT_BUS_NAME = "LiwanagEventBus"
 session = boto3.Session(profile_name="jared-liwanag")
 eventbridge = session.client("events")
 
-source = "scoring.service"
-detail_type = "AnswerEvaluated"
+source = "progress.tracker"
+detail_type = "EpisodeCompleted"
+
 payload = {
     "userId": "e35e4184-f05c-4736-a902-8e0f1479563f",
-    "questionId": "67890",
-    "activityId": "abcde",
-    "result": "incorrect"
+    "episodeId": "b",
+    "unitId": "c",
+    "isFirstCompletion": True,
+    "timestamp": "2025-08-23T12:34:56.789Z"
 }
-# Sample event
-# This is correct and required casing or this API to work; boto3 will
-# internally format the event to the EventBridge format.
+
 event_entry = {
     "Source": source,
     "DetailType": detail_type,
