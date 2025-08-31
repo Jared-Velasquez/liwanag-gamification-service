@@ -72,8 +72,10 @@ public class RedisClient {
     public <T> Optional<T> objGet(String key, Class<T> type) {
         return withCircuitBreaker(() -> {
                 Object value = redisTemplate.opsForValue().get(key);
+                if (value == null) return Optional.empty();
+
                 if (!type.isInstance(value)) {
-                    log.warn("Unexpected type from Redis. Expected {}, got {}", type, value != null ? value.getClass() : "null");
+                    log.warn("Unexpected type from Redis. Expected {}, got {}", type, value.getClass());
                     throw new SerializationException("Error deserializing Redis data");
                 }
 

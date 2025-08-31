@@ -29,6 +29,7 @@ public class GamificationQueueConsumer {
     private final QuestionStatsService questionStatsService;
     private final ExperienceService experienceService;
     private final AchievementService achievementService;
+    private final QuestionStatsService statsService;
     private final ObjectMapper objectMapper;
 
     @SqsListener(value = "GamificationQueue")
@@ -112,7 +113,7 @@ public class GamificationQueueConsumer {
         log.info("Handling ActivityCompleted event");
         UUID userId = event.getUserId();
 
-        achievementService.updateActivityCompleted(event);
+        statsService.updateActivityCompleted(event);
         achievementService.checkAchievementsUnlocked(userId);
     }
 
@@ -120,7 +121,7 @@ public class GamificationQueueConsumer {
         log.info("Handling EpisodeCompleted event");
         UUID userId = event.getUserId();
 
-        achievementService.updateEpisodeCompleted(event);
+        statsService.updateEpisodeCompleted(event);
         achievementService.checkAchievementsUnlocked(userId);
     }
 
@@ -128,7 +129,7 @@ public class GamificationQueueConsumer {
         log.info("Handling UnitCompleted event");
         UUID userId = event.getUserId();
 
-        achievementService.updateUnitCompleted(event);
+        statsService.updateUnitCompleted(event);
         achievementService.checkAchievementsUnlocked(userId);
     }
 }
